@@ -1,0 +1,86 @@
+﻿{
+    "PrinterSettings": {
+        "DefaultPrinter": "ZEBRA01",
+        "AutoDetectPrinters": true,
+        "ConnectionTimeout": 30,
+        "PrintTimeout": 60,
+        "MaxRetries": 3,
+        "RetryDelay": 2000
+    },
+    "ZebraPrinters": [
+        {
+            "Name": "ZEBRA01",
+            "DisplayName": "Zebra 01 - Línea Principal",
+            "IPAddress": "192.168.1.100",
+            "Port": 9100,
+            "Model": "ZT410",
+            "Resolution": 203,
+            "MaxWidth": 609,
+            "MaxHeight": 2030,
+            "IsNetworkPrinter": true,
+            "IsEnabled": true,
+            "Description": "Impresora principal para etiquetas molduras"
+        },
+        {
+            "Name": "ZEBRA02",
+            "DisplayName": "Zebra 02 - Línea Secundaria",
+            "IPAddress": "192.168.1.101",
+            "Port": 9100,
+            "Model": "ZT410",
+            "Resolution": 203,
+            "MaxWidth": 609,
+            "MaxHeight": 2030,
+            "IsNetworkPrinter": true,
+            "IsEnabled": true,
+            "Description": "Impresora secundaria para etiquetas especiales"
+        },
+        {
+            "Name": "ZEBRA03",
+            "DisplayName": "Zebra 03 - Backup",
+            "IPAddress": "192.168.1.102",
+            "Port": 9100,
+            "Model": "ZT410",
+            "Resolution": 203,
+            "MaxWidth": 609,
+            "MaxHeight": 2030,
+            "IsNetworkPrinter": true,
+            "IsEnabled": false,
+            "Description": "Impresora de respaldo"
+        }
+    ],
+    "PrintParameters": {
+        "DefaultSpeed": 4,
+        "DefaultDensity": 15,
+        "DefaultTearOff": 0,
+        "SpeedOptions": [ 2, 3, 4, 5, 6, 8, 10, 12 ],
+        "DensityOptions": [ 5, 10, 15, 20, 25, 30 ],
+        "MediaType": "Direct Thermal",
+        "PrintMethod": "Direct Thermal"
+    },
+    "ZPLCommands": {
+        "InitializeCommands": [
+            "^XA",
+            "^MNN",
+            "^PW609",
+            "^LL203"
+        ],
+        "FinalizationCommands": [
+            "^XZ"
+        ],
+        "CalibrationCommand": "~JC",
+        "StatusCommand": "~HQES",
+        "ResetCommand": "~JR"
+    },
+    "QualitySettings": {
+        "PrintQuality": "High",
+        "EnablePrintOptimization": true,
+        "EnableRibbonSaver": false,
+        "MediaCalibration": "Auto"
+    },
+    "Maintenance": {
+        "EnablePrintCountTracking": true,
+        "MaintenanceAlertThreshold": 10000,
+        "CleaningReminderInterval": 5000,
+        "LastMaintenanceDate": null
+    }
+}

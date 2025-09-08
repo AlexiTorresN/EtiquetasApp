@@ -1,0 +1,142 @@
+{
+  "DatabaseSettings": {
+    "Provider": "SqlServer",
+    "ConnectionTimeout": 30,
+    "CommandTimeout": 60,
+    "EnableConnectionPooling": true,
+    "MaxPoolSize": 100,
+    "MinPoolSize": 5,
+    "PooledConnectionLifetime": 300,
+    "EnableStatistics": true,
+    "MultipleActiveResultSets": true
+  },
+  "Connections": {
+    "Primary": {
+      "Name": "EtiquetasDB",
+      "Server": "localhost",
+      "Database": "EtiquetasDB",
+      "IntegratedSecurity": true,
+      "Username": "",
+      "Password": "",
+      "Encrypt": false,
+      "TrustServerCertificate": true,
+      "ApplicationName": "EtiquetasApp",
+      "Description": "Base de datos principal del sistema de etiquetas"
+    },
+    "Secondary": {
+      "Name": "ProduccionDB",
+      "Server": "localhost",
+      "Database": "ProduccionDB",
+      "IntegratedSecurity": true,
+      "Username": "",
+      "Password": "",
+      "Encrypt": false,
+      "TrustServerCertificate": true,
+      "ApplicationName": "EtiquetasApp",
+      "Description": "Base de datos de producción (opcional)"
+    }
+  },
+  "Tables": {
+    "SolicitudEtiqueta": {
+      "TableName": "SOLICITUD_ETIQUETA",
+      "PrimaryKey": "Id_Solicitud",
+      "EnableAuditing": true,
+      "CacheDuration": 300
+    },
+    "MaestroCodigos": {
+      "TableName": "MAESTRO_COD_ETIQ",
+      "PrimaryKey": "Id_Codigo",
+      "EnableAuditing": false,
+      "CacheDuration": 1800
+    },
+    "SeguridadApps": {
+      "TableName": "SEGURIDAD_APPS",
+      "PrimaryKey": "Id_Seguridad",
+      "EnableAuditing": true,
+      "CacheDuration": 3600
+    },
+    "LogActividades": {
+      "TableName": "LOG_ACTIVIDADES",
+      "PrimaryKey": "Id_Log",
+      "EnableAuditing": false,
+      "CacheDuration": 0
+    }
+  },
+  "StoredProcedures": {
+    "GetSolicitudesEtiquetas": {
+      "Name": "sp_GetSolicitudesEtiquetas",
+      "Timeout": 30,
+      "EnableCaching": true,
+      "CacheDuration": 300
+    },
+    "CreateSolicitudEtiqueta": {
+      "Name": "sp_CreateSolicitudEtiqueta",
+      "Timeout": 60,
+      "EnableCaching": false,
+      "CacheDuration": 0
+    },
+    "UpdateSolicitudEtiqueta": {
+      "Name": "sp_UpdateSolicitudEtiqueta",
+      "Timeout": 60,
+      "EnableCaching": false,
+      "CacheDuration": 0
+    },
+    "ValidateUserAccess": {
+      "Name": "sp_ValidateUserAccess",
+      "Timeout": 10,
+      "EnableCaching": true,
+      "CacheDuration": 1800
+    }
+  },
+  "Security": {
+    "EncryptConnectionStrings": false,
+    "UseIntegratedSecurity": true,
+    "EnableSqlInjectionProtection": true,
+    "LogSqlQueries": false,
+    "LogSlowQueries": true,
+    "SlowQueryThreshold": 5000,
+    "EnableQueryParameterValidation": true
+  },
+  "Performance": {
+    "EnableQueryPlan": false,
+    "EnableStatistics": true,
+    "ConnectionRetryCount": 3,
+    "ConnectionRetryInterval": 2,
+    "BulkCopyTimeout": 300,
+    "BulkCopyBatchSize": 1000,
+    "EnableAsyncOperations": true
+  },
+  "Maintenance": {
+    "EnableAutoShrink": false,
+    "EnableAutoUpdateStatistics": true,
+    "BackupRetentionDays": 30,
+    "LogRetentionDays": 90,
+    "EnableIndexMaintenance": true,
+    "MaintenanceWindowStart": "02:00:00",
+    "MaintenanceWindowEnd": "04:00:00"
+  },
+  "Monitoring": {
+    "EnablePerformanceCounters": true,
+    "EnableConnectionMonitoring": true,
+    "EnableDeadlockDetection": true,
+    "EnableBlockingDetection": true,
+    "MonitoringIntervalSeconds": 60,
+    "AlertThresholds": {
+      "ConnectionPoolUtilization": 80,
+      "AverageQueryTime": 2000,
+      "DeadlockCount": 5,
+      "BlockingTime": 30000
+    }
+  },
+  "ErrorHandling": {
+    "EnableDetailedErrors": true,
+    "LogConnectionErrors": true,
+    "LogQueryErrors": true,
+    "LogTimeoutErrors": true,
+    "MaxRetryAttempts": 3,
+    "RetryDelay": 1000,
+    "EnableCircuitBreaker": true,
+    "CircuitBreakerThreshold": 10,
+    "CircuitBreakerTimeout": 60000
+  }
+}

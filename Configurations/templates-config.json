@@ -1,0 +1,192 @@
+﻿{
+    "TemplateSettings": {
+        "DefaultTemplatesPath": "Templates\\ZPL\\",
+        "BackupTemplatesPath": "Backups\\Templates\\",
+        "EnableTemplateValidation": true,
+        "AutoSaveChanges": true,
+        "TemplateEncoding": "UTF-8"
+    },
+    "LabelTypes": [
+        {
+            "TipoCodigo": "MOLDURAS",
+            "Descripcion": "Etiquetas para molduras estándar",
+            "TemplateFile": "MOLDURAS.zpl",
+            "Width": 609,
+            "Height": 203,
+            "IsActive": true,
+            "RequiredFields": [ "UPC1", "UPC2", "DESCRIPCION", "COLOR", "ORDEN_FAB" ],
+            "OptionalFields": [ "FECHA_FAB", "LOTE", "SERIE" ],
+            "DefaultParameters": {
+                "PrintSpeed": 4,
+                "PrintDensity": 15,
+                "Copies": 1
+            }
+        },
+        {
+            "TipoCodigo": "NACIONAL",
+            "Descripcion": "Etiquetas nacionales y Fintek",
+            "TemplateFile": "NACIONAL.zpl",
+            "Width": 609,
+            "Height": 203,
+            "IsActive": true,
+            "RequiredFields": [ "UPC", "DESCRIPCION", "PRECIO" ],
+            "OptionalFields": [ "CODIGO_BARRAS", "FABRICANTE" ],
+            "DefaultParameters": {
+                "PrintSpeed": 4,
+                "PrintDensity": 15,
+                "Copies": 1
+            }
+        },
+        {
+            "TipoCodigo": "BICOLOR",
+            "Descripcion": "Etiquetas bicolor especiales",
+            "TemplateFile": "BICOLOR.zpl",
+            "Width": 609,
+            "Height": 203,
+            "IsActive": true,
+            "RequiredFields": [ "UPC", "DESCRIPCION", "COLOR1", "COLOR2" ],
+            "OptionalFields": [ "TEXTURA", "ACABADO" ],
+            "DefaultParameters": {
+                "PrintSpeed": 3,
+                "PrintDensity": 20,
+                "Copies": 1
+            }
+        },
+        {
+            "TipoCodigo": "ALX",
+            "Descripcion": "Etiquetas ALX especiales",
+            "TemplateFile": "ALX.zpl",
+            "Width": 609,
+            "Height": 203,
+            "IsActive": true,
+            "RequiredFields": [ "UPC", "ITEM_CODE", "DESCRIPCION" ],
+            "OptionalFields": [ "CATEGORIA", "SUBCATEGORIA" ],
+            "DefaultParameters": {
+                "PrintSpeed": 4,
+                "PrintDensity": 15,
+                "Copies": 1
+            }
+        },
+        {
+            "TipoCodigo": "CBCO_E",
+            "Descripcion": "Etiquetas C/BCO-E",
+            "TemplateFile": "CBCO_E.zpl",
+            "Width": 609,
+            "Height": 203,
+            "IsActive": true,
+            "RequiredFields": [ "UPC", "DESCRIPCION", "CODIGO_BCO" ],
+            "OptionalFields": [ "MEDIDAS", "PESO" ],
+            "DefaultParameters": {
+                "PrintSpeed": 4,
+                "PrintDensity": 15,
+                "Copies": 1
+            }
+        },
+        {
+            "TipoCodigo": "UPC_VESTO",
+            "Descripcion": "Etiquetas UPC VESTO",
+            "TemplateFile": "UPC_VESTO.zpl",
+            "Width": 609,
+            "Height": 203,
+            "IsActive": true,
+            "RequiredFields": [ "UPC", "DESCRIPCION_VESTO", "CODIGO_VESTO" ],
+            "OptionalFields": [ "PROVEEDOR", "IMPORTADOR" ],
+            "DefaultParameters": {
+                "PrintSpeed": 4,
+                "PrintDensity": 15,
+                "Copies": 1
+            }
+        },
+        {
+            "TipoCodigo": "LAQ_HB_R",
+            "Descripcion": "Etiquetas Molduras LAQ/HB R",
+            "TemplateFile": "LAQ_HB_R.zpl",
+            "Width": 609,
+            "Height": 203,
+            "IsActive": true,
+            "RequiredFields": [ "UPC", "TIPO_MOLDURA", "ACABADO", "DESCRIPCION" ],
+            "OptionalFields": [ "GROSOR", "LARGO" ],
+            "DefaultParameters": {
+                "PrintSpeed": 4,
+                "PrintDensity": 15,
+                "Copies": 1
+            }
+        }
+    ],
+    "Variables": {
+        "GlobalVariables": [
+            {
+                "Name": "FECHA_ACTUAL",
+                "Type": "DateTime",
+                "Format": "dd/MM/yyyy",
+                "Description": "Fecha actual del sistema"
+            },
+            {
+                "Name": "HORA_ACTUAL",
+                "Type": "DateTime",
+                "Format": "HH:mm:ss",
+                "Description": "Hora actual del sistema"
+            },
+            {
+                "Name": "USUARIO_ACTUAL",
+                "Type": "String",
+                "Description": "Usuario que genera la etiqueta"
+            },
+            {
+                "Name": "EQUIPO_ACTUAL",
+                "Type": "String",
+                "Description": "Nombre del equipo"
+            }
+        ],
+        "CommonVariables": [
+            {
+                "Name": "UPC",
+                "Type": "String",
+                "MaxLength": 12,
+                "Required": true,
+                "Description": "Código UPC principal"
+            },
+            {
+                "Name": "UPC2",
+                "Type": "String",
+                "MaxLength": 12,
+                "Required": false,
+                "Description": "Código UPC secundario"
+            },
+            {
+                "Name": "DESCRIPCION",
+                "Type": "String",
+                "MaxLength": 50,
+                "Required": true,
+                "Description": "Descripción del producto"
+            },
+            {
+                "Name": "COLOR",
+                "Type": "String",
+                "MaxLength": 20,
+                "Required": false,
+                "Description": "Color del producto"
+            },
+            {
+                "Name": "ORDEN_FAB",
+                "Type": "String",
+                "MaxLength": 20,
+                "Required": false,
+                "Description": "Número de orden de fabricación"
+            }
+        ]
+    },
+    "Validation": {
+        "ValidateUPCChecksum": true,
+        "ValidateRequiredFields": true,
+        "ValidateFieldLength": true,
+        "ValidateDataTypes": true,
+        "EnableTemplatePreview": true
+    },
+    "Performance": {
+        "CacheTemplates": true,
+        "CacheTimeout": 1800,
+        "PreloadTemplates": true,
+        "EnableTemplateCompression": false
+    }
+}

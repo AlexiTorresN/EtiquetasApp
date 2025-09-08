@@ -1,0 +1,180 @@
+{
+  "SecuritySettings": {
+    "AuthenticationMode": "ComputerName",
+    "EnableAuditLog": true,
+    "SessionTimeoutMinutes": 60,
+    "MaxConcurrentSessions": 1,
+    "PasswordPolicy": {
+      "RequirePassword": false,
+      "MinLength": 8,
+      "RequireUppercase": false,
+      "RequireLowercase": false,
+      "RequireNumbers": false,
+      "RequireSymbols": false
+    },
+    "AccountLockout": {
+      "EnableLockout": false,
+      "MaxFailedAttempts": 5,
+      "LockoutDurationMinutes": 30,
+      "ResetCounterMinutes": 15
+    }
+  },
+  "ApplicationSecurity": {
+    "ApplicationName": "ETIQUETAS MOLDURAS",
+    "EnableComputerValidation": true,
+    "DefaultPermissionLevel": "ReadOnly",
+    "EnablePermissionInheritance": true
+  },
+  "UserRoles": [
+    {
+      "RoleName": "Administrator",
+      "Description": "Acceso completo al sistema",
+      "Permissions": [
+        "FullAccess",
+        "CreateLabels",
+        "ModifyLabels",
+        "DeleteLabels",
+        "ViewReports",
+        "ManageUsers",
+        "ManageConfiguration",
+        "ManagePrinters",
+        "ManageTemplates",
+        "ViewAuditLog",
+        "ManageBackups"
+      ]
+    },
+    {
+      "RoleName": "Operator",
+      "Description": "Operador de producción",
+      "Permissions": [
+        "CreateLabels",
+        "ModifyLabels",
+        "ViewReports",
+        "PrintLabels",
+        "ViewRequests"
+      ]
+    },
+    {
+      "RoleName": "Supervisor",
+      "Description": "Supervisor de línea",
+      "Permissions": [
+        "CreateLabels",
+        "ModifyLabels",
+        "DeleteLabels",
+        "ViewReports",
+        "PrintLabels",
+        "ViewRequests",
+        "ManagePrinters",
+        "ViewAuditLog"
+      ]
+    },
+    {
+      "RoleName": "ReadOnly",
+      "Description": "Solo lectura",
+      "Permissions": [
+        "ViewReports",
+        "ViewRequests"
+      ]
+    }
+  ],
+  "ComputerAccess": [
+    {
+      "ComputerName": "ETIQUETAS-PC01",
+      "Role": "Administrator",
+      "IsEnabled": true,
+      "Description": "PC principal de etiquetas",
+      "LastAccess": null,
+      "CreatedDate": "2024-01-01T00:00:00"
+    },
+    {
+      "ComputerName": "PROD-LINE01",
+      "Role": "Operator",
+      "IsEnabled": true,
+      "Description": "PC línea de producción 1",
+      "LastAccess": null,
+      "CreatedDate": "2024-01-01T00:00:00"
+    },
+    {
+      "ComputerName": "PROD-LINE02",
+      "Role": "Operator",
+      "IsEnabled": true,
+      "Description": "PC línea de producción 2",
+      "LastAccess": null,
+      "CreatedDate": "2024-01-01T00:00:00"
+    },
+    {
+      "ComputerName": "SUPERVISOR-PC",
+      "Role": "Supervisor",
+      "IsEnabled": true,
+      "Description": "PC supervisión",
+      "LastAccess": null,
+      "CreatedDate": "2024-01-01T00:00:00"
+    }
+  ],
+  "AuditSettings": {
+    "EnableUserActions": true,
+    "EnableSystemEvents": true,
+    "EnableLoginAttempts": true,
+    "EnableDataChanges": true,
+    "EnablePrintingEvents": true,
+    "EnableConfigurationChanges": true,
+    "RetentionDays": 90,
+    "LogLevel": "Information",
+    "IncludeSensitiveData": false
+  },
+  "SessionManagement": {
+    "EnableSessionTracking": true,
+    "AllowMultipleSessions": false,
+    "IdleTimeoutMinutes": 30,
+    "AbsoluteTimeoutMinutes": 480,
+    "EnableSessionCleanup": true,
+    "CleanupIntervalMinutes": 15,
+    "WarnBeforeTimeout": true,
+    "WarningMinutesBeforeTimeout": 5
+  },
+  "DataProtection": {
+    "EncryptSensitiveData": false,
+    "EncryptionAlgorithm": "AES256",
+    "EnableDataMasking": false,
+    "MaskPatterns": {
+      "UPC": "####****####",
+      "CustomerCode": "***-****"
+    },
+    "EnableDataValidation": true,
+    "ValidateInputData": true,
+    "SanitizeInputData": true
+  },
+  "NetworkSecurity": {
+    "EnableIPWhitelist": false,
+    "AllowedIPRanges": [
+      "192.168.1.0/24",
+      "10.0.0.0/8"
+    ],
+    "BlockedIPRanges": [],
+    "EnableSSL": false,
+    "RequireSecureConnection": false,
+    "AllowedPorts": [ 9100, 80, 443, 1433 ]
+  },
+  "IntrusionDetection": {
+    "EnableBruteForceDetection": true,
+    "MaxFailedAttemptsPerMinute": 10,
+    "EnableSuspiciousActivityDetection": true,
+    "MonitorUnusualPatterns": true,
+    "AlertOnSecurityEvents": true,
+    "EmailNotifications": {
+      "EnableEmail": false,
+      "SmtpServer": "",
+      "SmtpPort": 587,
+      "Recipients": [ "admin@company.com" ],
+      "EnableSSL": true
+    }
+  },
+  "Compliance": {
+    "EnableComplianceMode": false,
+    "ComplianceStandard": "Internal",
+    "RequireApprovalForCriticalActions": false,
+    "EnableChangeControl": false,
+    "RequireReasonForChanges": true,
+    "EnableDigitalSignatures": false
+  }
+}
