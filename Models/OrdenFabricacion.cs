@@ -5,80 +5,79 @@ namespace EtiquetasApp.Models
 {
     public class OrdenFabricacion
     {
-        [Required(ErrorMessage = "El ID de la orden de fabricación es requerido")]
-        [StringLength(50, ErrorMessage = "El ID de la orden no puede exceder 50 caracteres")]
-        public string OrdenFab { get; set; }
+        [Required(ErrorMessage = "El Base ID es requerido")]
+        [StringLength(50, ErrorMessage = "El Base ID no puede exceder 50 caracteres")]
+        public string BaseId { get; set; }
 
-        [Required(ErrorMessage = "El ID de la parte es requerido")]
-        [StringLength(50, ErrorMessage = "El ID de la parte no puede exceder 50 caracteres")]
+        [Required(ErrorMessage = "El Part ID es requerido")]
+        [StringLength(50, ErrorMessage = "El Part ID no puede exceder 50 caracteres")]
         public string PartId { get; set; }
 
-        [Required(ErrorMessage = "La descripción es requerida")]
         [StringLength(200, ErrorMessage = "La descripción no puede exceder 200 caracteres")]
         public string Descripcion { get; set; }
 
-        [Range(1, int.MaxValue, ErrorMessage = "La cantidad debe ser mayor a 0")]
+        [Range(0, int.MaxValue, ErrorMessage = "La cantidad debe ser mayor a 0")]
         public int Cantidad { get; set; }
 
-        public DateTime FechaInicio { get; set; }
-
-        public DateTime FechaRequerida { get; set; }
-
-        public DateTime? FechaCompletada { get; set; }
-
         [StringLength(20, ErrorMessage = "El estado no puede exceder 20 caracteres")]
-        public string Estado { get; set; } = "PROGRAMADA";
-
-        [StringLength(50, ErrorMessage = "El recurso no puede exceder 50 caracteres")]
-        public string Recurso { get; set; } = "ETIQ";
-
-        [StringLength(20, ErrorMessage = "El schedule ID no puede exceder 20 caracteres")]
-        public string ScheduleId { get; set; } = "STANDARD";
-
-        public int Prioridad { get; set; } = 5;
-
-        public bool RequiereEtiquetas { get; set; } = true;
-
-        public bool TieneCodigoEtiqueta { get; set; }
+        public string Estado { get; set; } = "ACTIVE";
 
         public DateTime FechaCreacion { get; set; } = DateTime.Now;
 
-        public DateTime? FechaModificacion { get; set; }
+        public DateTime? FechaInicio { get; set; }
+
+        public DateTime? FechaFin { get; set; }
+
+        public DateTime? FechaProgramada { get; set; }
+
+        [StringLength(50, ErrorMessage = "El usuario no puede exceder 50 caracteres")]
+        public string UsuarioCreacion { get; set; }
+
+        [StringLength(500, ErrorMessage = "Las observaciones no pueden exceder 500 caracteres")]
+        public string Observaciones { get; set; }
+
+        public int Prioridad { get; set; } = 5; // 1 = Alta, 5 = Normal, 10 = Baja
+
+        // Propiedades relacionadas con etiquetas
+        public bool RequiereEtiquetas { get; set; } = true;
+
+        public bool TieneCodigoEtiqueta { get; set; } = false;
+
+        public int CantidadEtiquetasSolicitadas { get; set; } = 0;
+
+        public int CantidadEtiquetasFabricadas { get; set; } = 0;
 
         // Propiedades calculadas
-        public int DiasParaInicio
-        {
-            get
-            {
-                return (FechaInicio.Date - DateTime.Now.Date).Days;
-            }
-        }
+        public bool EstaActiva => Estado == "ACTIVE";
 
-        public int DiasParaEntrega
-        {
-            get
-            {
-                return (FechaRequerida.Date - DateTime.Now.Date).Days;
-            }
-        }
+        public bool EstaCompletada => Estado == "COMPLETED";
 
-        public bool EstaVencida => FechaRequerida < DateTime.Now && !EstaCompletada;
+        public bool EstaCancelada => Estado == "CANCELLED";
 
-        public bool EstaCompletada => FechaCompletada.HasValue;
-
-        public bool EsUrgente => DiasParaEntrega <= 2 && !EstaCompletada;
+        public bool EstaEnProceso => Estado == "IN_PROCESS";
 
         public string EstadoDescripcion
         {
             get
             {
-                if (EstaCompletada) return "Completada";
-                if (EstaVencida) return "Vencida";
-                if (DiasParaInicio <= 0) return "En Proceso";
-                if (DiasParaInicio <= 1) return "Por Iniciar";
-                return "Programada";
+                return Estado switch
+                {
+                    "ACTIVE" => "Activa",
+                    "IN_PROCESS" => "En Proceso",
+                    "COMPLETED" => "Completada",
+                    "CANCELLED" => "Cancelada",
+                    "PAUSED" => "Pausada",
+                    "PENDING" => "Pendiente",
+                    _ => Estado
+                };
             }
         }
+
+        public int CantidadEtiquetasPendientes => Math.Max(0, CantidadEtiquetasSolicitadas - CantidadEtiquetasFabricadas);
+
+        public bool RequiereGeneracionEtiquetas => RequiereEtiquetas && !TieneCodigoEtiqueta;
+
+        public bool RequiereImpresionEtiquetas => RequiereEtiquetas && TieneCodigoEtiqueta && CantidadEtiquetasPendientes > 0;
 
         public string PrioridadDescripcion
         {
@@ -99,101 +98,174 @@ namespace EtiquetasApp.Models
             }
         }
 
-        // Métodos de validación
+        public int DiasDesdeCreacion => (DateTime.Now - FechaCreacion).Days;
+
+        public int? DiasParaProgramada => FechaProgramada.HasValue ? (FechaProgramada.Value - DateTime.Now).Days : null;
+
+        public bool EsUrgente => Prioridad <= 2 || (DiasParaProgramada.HasValue && DiasParaProgramada <= 1);
+
+        // Validaciones de negocio
+        public bool ValidarDatos()
+        {
+            return !string.IsNullOrEmpty(BaseId) &&
+                   !string.IsNullOrEmpty(PartId) &&
+                   Cantidad > 0 &&
+                   !string.IsNullOrEmpty(Estado);
+        }
+
         public bool ValidarFechas()
         {
-            if (FechaInicio > FechaRequerida)
-                return false;
+            if (FechaInicio.HasValue && FechaFin.HasValue)
+                return FechaFin >= FechaInicio;
 
-            if (FechaCompletada.HasValue && FechaCompletada < FechaInicio)
-                return false;
+            if (FechaProgramada.HasValue)
+                return FechaProgramada >= FechaCreacion.Date;
 
             return true;
         }
 
-        public bool PuedeGenerarSolicitudEtiquetas()
+        public bool ValidarEtiquetas()
         {
-            return RequiereEtiquetas && !TieneCodigoEtiqueta && DiasParaEntrega > 0;
+            if (!RequiereEtiquetas)
+                return true;
+
+            return CantidadEtiquetasSolicitadas >= 0 &&
+                   CantidadEtiquetasFabricadas >= 0 &&
+                   CantidadEtiquetasFabricadas <= CantidadEtiquetasSolicitadas;
         }
 
         // Métodos de utilidad
-        public void CompletarOrden()
+        public void IniciarProceso(string usuario = "")
         {
-            Estado = "COMPLETADA";
-            FechaCompletada = DateTime.Now;
-            FechaModificacion = DateTime.Now;
+            if (!EstaActiva)
+                throw new InvalidOperationException("Solo se pueden iniciar órdenes activas");
+
+            Estado = "IN_PROCESS";
+            FechaInicio = DateTime.Now;
+
+            if (!string.IsNullOrEmpty(usuario))
+                UsuarioCreacion = usuario;
         }
 
-        public void IniciarOrden()
+        public void CompletarOrden(string usuario = "")
         {
-            Estado = "EN_PROCESO";
-            FechaModificacion = DateTime.Now;
+            if (!EstaEnProceso)
+                throw new InvalidOperationException("Solo se pueden completar órdenes en proceso");
+
+            Estado = "COMPLETED";
+            FechaFin = DateTime.Now;
+
+            if (!string.IsNullOrEmpty(usuario))
+                UsuarioCreacion = usuario;
         }
 
-        public void CancelarOrden()
+        public void CancelarOrden(string razon, string usuario = "")
         {
-            Estado = "CANCELADA";
-            FechaModificacion = DateTime.Now;
+            if (EstaCompletada)
+                throw new InvalidOperationException("No se puede cancelar una orden completada");
+
+            Estado = "CANCELLED";
+            Observaciones = $"{Observaciones}\n[{DateTime.Now:dd/MM/yyyy}] Cancelada: {razon}".Trim();
+
+            if (!string.IsNullOrEmpty(usuario))
+                UsuarioCreacion = usuario;
         }
 
-        public void PausarOrden()
+        public void SolicitarEtiquetas(int cantidad, string usuario = "")
         {
-            Estado = "PAUSADA";
-            FechaModificacion = DateTime.Now;
+            if (cantidad <= 0)
+                throw new ArgumentException("La cantidad debe ser mayor a 0");
+
+            if (cantidad > 10000)
+                throw new ArgumentException("No se pueden solicitar más de 10,000 etiquetas por orden");
+
+            CantidadEtiquetasSolicitadas = cantidad;
+            RequiereEtiquetas = true;
+
+            if (!string.IsNullOrEmpty(usuario))
+                UsuarioCreacion = usuario;
         }
 
-        public void ReanudarOrden()
+        public void MarcarEtiquetasFabricadas(int cantidad, string usuario = "")
         {
-            Estado = "EN_PROCESO";
-            FechaModificacion = DateTime.Now;
+            if (cantidad < 0)
+                throw new ArgumentException("La cantidad no puede ser negativa");
+
+            if (cantidad > CantidadEtiquetasPendientes)
+                throw new ArgumentException("No se pueden fabricar más etiquetas de las solicitadas");
+
+            CantidadEtiquetasFabricadas += cantidad;
+
+            if (!string.IsNullOrEmpty(usuario))
+                UsuarioCreacion = usuario;
         }
 
-        public void ActualizarPrioridad(int nuevaPrioridad)
+        public void EstablecerCodigoEtiqueta(bool tieneCodigoEtiqueta, string usuario = "")
         {
-            if (nuevaPrioridad < 1 || nuevaPrioridad > 10)
-                throw new ArgumentException("La prioridad debe estar entre 1 y 10");
+            TieneCodigoEtiqueta = tieneCodigoEtiqueta;
 
-            Prioridad = nuevaPrioridad;
-            FechaModificacion = DateTime.Now;
-        }
-
-        public void MarcarComoConEtiquetas()
-        {
-            TieneCodigoEtiqueta = true;
-            FechaModificacion = DateTime.Now;
-        }
-
-        public SolicitudEtiqueta GenerarSolicitudEtiqueta(string tipoEtiqueta = "", string observaciones = "")
-        {
-            if (!PuedeGenerarSolicitudEtiquetas())
-                throw new InvalidOperationException("No se puede generar solicitud de etiquetas para esta orden");
-
-            return new SolicitudEtiqueta
-            {
-                OrdenFab = this.OrdenFab,
-                Descripcion = this.Descripcion,
-                CantidadPedida = this.Cantidad,
-                FechaRequerida = this.FechaRequerida.AddDays(-1), // Un día antes de la fecha requerida
-                TipoEtiqueta = tipoEtiqueta,
-                Observaciones = observaciones,
-                Color = "Blancas" // Valor por defecto
-            };
+            if (!string.IsNullOrEmpty(usuario))
+                UsuarioCreacion = usuario;
         }
 
         public override string ToString()
         {
-            return $"{OrdenFab} - {Descripcion} ({Cantidad} pcs) - {EstadoDescripcion}";
+            return $"{BaseId} - {PartId} ({Cantidad} unidades)";
         }
 
-        // Constructor
-        public OrdenFabricacion()
+        public override bool Equals(object obj)
         {
-            FechaCreacion = DateTime.Now;
-            Estado = "PROGRAMADA";
-            Recurso = "ETIQ";
-            ScheduleId = "STANDARD";
-            Prioridad = 5;
-            RequiereEtiquetas = true;
+            if (obj is OrdenFabricacion other)
+                return BaseId == other.BaseId;
+            return false;
+        }
+
+        public override int GetHashCode()
+        {
+            return BaseId?.GetHashCode() ?? 0;
+        }
+    }
+
+    // Enumeración para estados de orden
+    public enum EstadoOrden
+    {
+        ACTIVE,
+        IN_PROCESS,
+        COMPLETED,
+        CANCELLED,
+        PAUSED,
+        PENDING
+    }
+
+    // Extensiones para EstadoOrden
+    public static class EstadoOrdenExtensions
+    {
+        public static string GetDisplayName(this EstadoOrden estado)
+        {
+            return estado switch
+            {
+                EstadoOrden.ACTIVE => "Activa",
+                EstadoOrden.IN_PROCESS => "En Proceso",
+                EstadoOrden.COMPLETED => "Completada",
+                EstadoOrden.CANCELLED => "Cancelada",
+                EstadoOrden.PAUSED => "Pausada",
+                EstadoOrden.PENDING => "Pendiente",
+                _ => estado.ToString()
+            };
+        }
+
+        public static string GetDescription(this EstadoOrden estado)
+        {
+            return estado switch
+            {
+                EstadoOrden.ACTIVE => "Orden activa, lista para iniciar",
+                EstadoOrden.IN_PROCESS => "Orden en proceso de fabricación",
+                EstadoOrden.COMPLETED => "Orden completada exitosamente",
+                EstadoOrden.CANCELLED => "Orden cancelada",
+                EstadoOrden.PAUSED => "Orden pausada temporalmente",
+                EstadoOrden.PENDING => "Orden pendiente de aprobación",
+                _ => "Estado desconocido"
+            };
         }
     }
 }

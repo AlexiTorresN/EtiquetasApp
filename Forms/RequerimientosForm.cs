@@ -69,7 +69,7 @@ namespace EtiquetasApp.Forms
             {
                 // Cargar órdenes de requerimientos y maestros de códigos
                 ordenesRequerimientos = DatabaseService.GetOrdenesRequerimientos();
-                maestrosCodigos = DatabaseService.GetMaestroCodigosEtiquetas();
+                maestrosCodigos = DatabaseService.MaestroCodigosEtiquetas;
 
                 // Marcar órdenes que ya tienen códigos configurados
                 MarcarOrdenesConCodigos();

@@ -3,7 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.IO;
-using System.Xml;
 
 namespace EtiquetasApp.Configurations
 {
@@ -65,37 +64,25 @@ namespace EtiquetasApp.Configurations
 
         #region Métodos de Inicialización
         /// <summary>
-        /// Inicializa todas las configuraciones
+        /// Inicializa el gestor de configuración
         /// </summary>
         public static void Initialize()
         {
             lock (_lockObject)
             {
-                if (_isInitialized)
-                    return;
+                if (_isInitialized) return;
 
                 try
                 {
-                    // Verificar que existe el directorio de configuraciones
-                    string configPath = GetConfigPath();
-                    if (!Directory.Exists(configPath))
-                    {
-                        Directory.CreateDirectory(configPath);
-                    }
-
-                    // Cargar todas las configuraciones
                     LoadAllConfigurations();
-
-                    // Validar configuraciones críticas
                     ValidateConfigurations();
-
                     _isInitialized = true;
-                    LogEvent($"Configuraciones inicializadas correctamente desde: {configPath}");
+                    LogEvent("ConfigurationManager inicializado correctamente");
                 }
                 catch (Exception ex)
                 {
-                    LogError($"Error al inicializar configuraciones: {ex.Message}");
-                    throw new ConfigurationErrorsException("Error al cargar configuraciones del sistema", ex);
+                    LogError($"Error inicializando ConfigurationManager: {ex.Message}");
+                    throw;
                 }
             }
         }
@@ -109,7 +96,7 @@ namespace EtiquetasApp.Configurations
         }
         #endregion
 
-        #region Métodos de Carga de Configuraciones
+        #region Métodos de Carga
         private static void LoadPrinterConfiguration()
         {
             try
@@ -209,7 +196,7 @@ namespace EtiquetasApp.Configurations
             try
             {
                 string filePath = Path.Combine(GetConfigPath(), "printer-config.json");
-                string json = JsonConvert.SerializeObject(_printerConfig, Formatting.Indented);
+                string json = JsonConvert.SerializeObject(_printerConfig, Newtonsoft.Json.Formatting.Indented);
                 File.WriteAllText(filePath, json);
                 LogEvent("Configuración de impresoras guardada");
             }
@@ -224,7 +211,7 @@ namespace EtiquetasApp.Configurations
             try
             {
                 string filePath = Path.Combine(GetConfigPath(), "templates-config.json");
-                string json = JsonConvert.SerializeObject(_templatesConfig, Formatting.Indented);
+                string json = JsonConvert.SerializeObject(_templatesConfig, Newtonsoft.Json.Formatting.Indented);
                 File.WriteAllText(filePath, json);
                 LogEvent("Configuración de plantillas guardada");
             }
@@ -239,7 +226,7 @@ namespace EtiquetasApp.Configurations
             try
             {
                 string filePath = Path.Combine(GetConfigPath(), "database-config.json");
-                string json = JsonConvert.SerializeObject(_databaseConfig, Formatting.Indented);
+                string json = JsonConvert.SerializeObject(_databaseConfig, Newtonsoft.Json.Formatting.Indented);
                 File.WriteAllText(filePath, json);
                 LogEvent("Configuración de base de datos guardada");
             }
@@ -254,7 +241,7 @@ namespace EtiquetasApp.Configurations
             try
             {
                 string filePath = Path.Combine(GetConfigPath(), "security-config.json");
-                string json = JsonConvert.SerializeObject(_securityConfig, Formatting.Indented);
+                string json = JsonConvert.SerializeObject(_securityConfig, Newtonsoft.Json.Formatting.Indented);
                 File.WriteAllText(filePath, json);
                 LogEvent("Configuración de seguridad guardada");
             }
@@ -427,56 +414,27 @@ namespace EtiquetasApp.Configurations
         #region Métodos Utilitarios
         private static string GetConfigPath()
         {
-            return GetAppSetting("ConfigurationsPath", @"Configurations\");
-        }
+            string basePath = AppDomain.CurrentDomain.BaseDirectory;
+            string configPath = Path.Combine(basePath, "Configurations");
 
-        /// <summary>
-        /// Obtiene la ruta completa de un archivo en el directorio de configuraciones
-        /// </summary>
-        public static string GetConfigFilePath(string fileName)
-        {
-            return Path.Combine(GetConfigPath(), fileName);
-        }
-
-        /// <summary>
-        /// Verifica si un archivo de configuración existe
-        /// </summary>
-        public static bool ConfigFileExists(string fileName)
-        {
-            return File.Exists(GetConfigFilePath(fileName));
-        }
-
-        /// <summary>
-        /// Recargar todas las configuraciones
-        /// </summary>
-        public static void RefreshConfigurations()
-        {
-            lock (_lockObject)
+            if (!Directory.Exists(configPath))
             {
-                _printerConfig = null;
-                _templatesConfig = null;
-                _databaseConfig = null;
-                _securityConfig = null;
-                _isInitialized = false;
-
-                Initialize();
-                LogEvent("Configuraciones recargadas");
+                Directory.CreateDirectory(configPath);
             }
-        }
-        #endregion
 
-        #region Métodos de Logging
+            return configPath;
+        }
+
         private static void LogEvent(string message)
         {
             try
             {
-                // Usar el sistema de logging de la aplicación
-                Console.WriteLine($"[CONFIG] {DateTime.Now:yyyy-MM-dd HH:mm:ss} - {message}");
-                System.Diagnostics.Trace.TraceInformation($"[CONFIG] {message}");
+                Console.WriteLine($"[INFO] {DateTime.Now:yyyy-MM-dd HH:mm:ss} - {message}");
+                // Aquí puedes agregar logging a archivo si es necesario
             }
             catch
             {
-                // Ignorar errores de logging para evitar bucles infinitos
+                // Evitar errores de logging para evitar bucles infinitos
             }
         }
 
@@ -484,12 +442,12 @@ namespace EtiquetasApp.Configurations
         {
             try
             {
-                Console.WriteLine($"[CONFIG ERROR] {DateTime.Now:yyyy-MM-dd HH:mm:ss} - {message}");
-                System.Diagnostics.Trace.TraceError($"[CONFIG] {message}");
+                Console.WriteLine($"[ERROR] {DateTime.Now:yyyy-MM-dd HH:mm:ss} - {message}");
+                // Aquí puedes agregar logging a archivo si es necesario
             }
             catch
             {
-                // Ignorar errores de logging para evitar bucles infinitos
+                // Evitar errores de logging para evitar bucles infinitos
             }
         }
         #endregion

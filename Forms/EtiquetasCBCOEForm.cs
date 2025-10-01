@@ -120,7 +120,7 @@ namespace EtiquetasApp.Forms
         {
             try
             {
-                var maestros = DatabaseService.GetMaestroCodigosEtiquetas();
+                var maestros = DatabaseService.MaestroCodigosEtiquetas;
                 return maestros.FirstOrDefault(m => m.PartId == ordenFab);
             }
             catch (Exception ex)

@@ -97,7 +97,7 @@ namespace EtiquetasApp.Forms
         {
             try
             {
-                maestrosCodigos = DatabaseService.GetMaestroCodigosEtiquetas();
+                maestrosCodigos = DatabaseService.MaestroCodigosEtiquetas;
                 statusLabel.Text = "Listo para crear nueva solicitud";
             }
             catch (Exception ex)

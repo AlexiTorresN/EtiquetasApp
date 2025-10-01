@@ -6,18 +6,74 @@
     <Nullable>enable</Nullable>
     <UseWindowsForms>true</UseWindowsForms>
     <ImplicitUsings>enable</ImplicitUsings>
+    <ApplicationIcon>icon.ico</ApplicationIcon>
+    <AssemblyTitle>Sistema de Etiquetas Molduras</AssemblyTitle>
+    <AssemblyDescription>Sistema de impresión de etiquetas para molduras y tableros</AssemblyDescription>
+    <AssemblyCompany>Tu Empresa</AssemblyCompany>
+    <AssemblyProduct>EtiquetasApp</AssemblyProduct>
+    <AssemblyVersion>2.0.0.0</AssemblyVersion>
+    <FileVersion>2.0.0.0</FileVersion>
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="Configurations\printer-config.json" />
-    <Compile Include="Configurations\templates-config.json" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="System.Data.SqlClient" Version="4.9.0" />
+    <PackageReference Include="System.Configuration.ConfigurationManager" Version="9.0.8" />
+    <PackageReference Include="System.Drawing.Common" Version="9.0.8" />
   </ItemGroup>
 
   <ItemGroup>
+    <!-- Archivos de configuración JSON -->
+    <Content Include="Configurations\printer-config.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Configurations\templates-config.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Configurations\database-config.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Configurations\security-config.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+
+    <!-- Archivo de configuración principal -->
+    <None Include="App.config">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Directorios necesarios -->
     <Folder Include="Resources\Images\" />
     <Folder Include="Scripts\" />
     <Folder Include="Utils\" />
     <Folder Include="Templates\" />
+    <Folder Include="Templates\ZPL\" />
+    <Folder Include="Logs\" />
+    <Folder Include="Logs\Audit\" />
+    <Folder Include="Backups\" />
+    <Folder Include="Backups\Templates\" />
   </ItemGroup>
+
+  <ItemGroup>
+    <!-- Plantillas ZPL por defecto -->
+    <Content Include="Templates\ZPL\*.zpl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <!-- Tareas post-build para crear directorios necesarios -->
+  <Target Name="CreateDirectories" BeforeTargets="Build">
+    <MakeDir Directories="$(OutputPath)Configurations" Condition="!Exists('$(OutputPath)Configurations')" />
+    <MakeDir Directories="$(OutputPath)Templates" Condition="!Exists('$(OutputPath)Templates')" />
+    <MakeDir Directories="$(OutputPath)Templates\ZPL" Condition="!Exists('$(OutputPath)Templates\ZPL')" />
+    <MakeDir Directories="$(OutputPath)Resources" Condition="!Exists('$(OutputPath)Resources')" />
+    <MakeDir Directories="$(OutputPath)Resources\Images" Condition="!Exists('$(OutputPath)Resources\Images')" />
+    <MakeDir Directories="$(OutputPath)Logs" Condition="!Exists('$(OutputPath)Logs')" />
+    <MakeDir Directories="$(OutputPath)Logs\Audit" Condition="!Exists('$(OutputPath)Logs\Audit')" />
+    <MakeDir Directories="$(OutputPath)Backups" Condition="!Exists('$(OutputPath)Backups')" />
+    <MakeDir Directories="$(OutputPath)Backups\Templates" Condition="!Exists('$(OutputPath)Backups\Templates')" />
+  </Target>
 
 </Project>
