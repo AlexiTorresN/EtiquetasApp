@@ -147,14 +147,14 @@ namespace EtiquetasApp
             reactivaSolicitudItem.Name = "reactivaSolicitudItem";
             reactivaSolicitudItem.Size = new Size(248, 22);
             reactivaSolicitudItem.Text = "Reactiva solicitud";
-            reactivaSolicitudItem.Click += ReactivaSolicitud_Click;
+            //reactivaSolicitudItem.Click += ReactivaSolicitud_Click;
             // 
             // eliminaSolicitudItem
             // 
             eliminaSolicitudItem.Name = "eliminaSolicitudItem";
             eliminaSolicitudItem.Size = new Size(248, 22);
             eliminaSolicitudItem.Text = "Elimina Solicitud";
-            eliminaSolicitudItem.Click += EliminaSolicitud_Click;
+            //eliminaSolicitudItem.Click += EliminaSolicitud_Click;
             // 
             // maestrosMenu
             // 
@@ -196,42 +196,42 @@ namespace EtiquetasApp
             etiquetasLaqueadoItem.Name = "etiquetasLaqueadoItem";
             etiquetasLaqueadoItem.Size = new Size(206, 22);
             etiquetasLaqueadoItem.Text = "Etiquetas Laqueado";
-            etiquetasLaqueadoItem.Click += EtiquetasLaqueado_Click;
+            //etiquetasLaqueadoItem.Click += EtiquetasLaqueado_Click;
             // 
             // etiquetasGardenStateItem
             // 
             etiquetasGardenStateItem.Name = "etiquetasGardenStateItem";
             etiquetasGardenStateItem.Size = new Size(206, 22);
             etiquetasGardenStateItem.Text = "Etiquetas GARDEN STATE";
-            etiquetasGardenStateItem.Click += EtiquetasGardenState_Click;
+            //etiquetasGardenStateItem.Click += EtiquetasGardenState_Click;
             // 
             // etiquetasBicolorItem
             // 
             etiquetasBicolorItem.Name = "etiquetasBicolorItem";
             etiquetasBicolorItem.Size = new Size(206, 22);
             etiquetasBicolorItem.Text = "Etiquetas BICOLOR2";
-            etiquetasBicolorItem.Click += EtiquetasBicolor_Click;
+            //etiquetasBicolorItem.Click += EtiquetasBicolor_Click;
             // 
             // etiquetasMoldurasItem
             // 
             etiquetasMoldurasItem.Name = "etiquetasMoldurasItem";
             etiquetasMoldurasItem.Size = new Size(206, 22);
             etiquetasMoldurasItem.Text = "Etiquetas para Molduras";
-            etiquetasMoldurasItem.Click += EtiquetasMolduras_Click;
+            //etiquetasMoldurasItem.Click += EtiquetasMolduras_Click;
             // 
             // etiquetasEAN13Item
             // 
             etiquetasEAN13Item.Name = "etiquetasEAN13Item";
             etiquetasEAN13Item.Size = new Size(206, 22);
             etiquetasEAN13Item.Text = "Etiquetas EAN 13";
-            etiquetasEAN13Item.Click += EtiquetasEAN13_Click;
+            //etiquetasEAN13Item.Click += EtiquetasEAN13_Click;
             // 
             // etiquetasI2de5Item
             // 
             etiquetasI2de5Item.Name = "etiquetasI2de5Item";
             etiquetasI2de5Item.Size = new Size(206, 22);
             etiquetasI2de5Item.Text = "Etiquetas I 2 de 5";
-            etiquetasI2de5Item.Click += EtiquetasI2de5_Click;
+            //etiquetasI2de5Item.Click += EtiquetasI2de5_Click;
             // 
             // configuracionMenu
             // 
@@ -245,14 +245,14 @@ namespace EtiquetasApp
             configurarImpresorasItem.Name = "configurarImpresorasItem";
             configurarImpresorasItem.Size = new Size(202, 22);
             configurarImpresorasItem.Text = "Configurar Impresoras";
-            configurarImpresorasItem.Click += ConfigurarImpresoras_Click;
+            //configurarImpresorasItem.Click += ConfigurarImpresoras_Click;
             // 
             // configurarConexionItem
             // 
             configurarConexionItem.Name = "configurarConexionItem";
             configurarConexionItem.Size = new Size(202, 22);
             configurarConexionItem.Text = "Configurar Conexión DB";
-            configurarConexionItem.Click += ConfigurarConexion_Click;
+            //configurarConexionItem.Click += ConfigurarConexion_Click;
             // 
             // salirMenu
             // 

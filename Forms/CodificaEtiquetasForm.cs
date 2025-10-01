@@ -113,7 +113,7 @@ namespace EtiquetasApp.Forms
         {
             try
             {
-                maestrosCodigos = DatabaseService.MaestroCodigosEtiquetas;
+                maestrosCodigos = DatabaseService.GetMaestroCodigosEtiquetas();
                 AplicarFiltros();
                 ActualizarEstadisticas();
             }
@@ -153,12 +153,12 @@ namespace EtiquetasApp.Forms
         private bool FiltrarPorDescripcion(MaestroCodigoEtiqueta maestro)
         {
             if (string.IsNullOrEmpty(descripcionFiltroTextBox.Text)) return true;
-            return maestro.Descripcion.ToUpper().Contains(descripcionFiltroTextBox.Text.ToUpper());
+            return maestro.Descripcion?.ToUpper().Contains(descripcionFiltroTextBox.Text.ToUpper()) ?? false;
         }
 
         private bool FiltrarPorTipo(MaestroCodigoEtiqueta maestro)
         {
-            if (tipoEtiquetaFiltroComboBox.SelectedIndex == 0) return true; // "Todos"
+            if (tipoEtiquetaFiltroComboBox.SelectedIndex == 0) return true;
             var tipoSeleccionado = tipoEtiquetaFiltroComboBox.SelectedItem.ToString();
             return maestro.TipoEtiqueta == tipoSeleccionado;
         }
@@ -187,7 +187,6 @@ namespace EtiquetasApp.Forms
                     row.Cells[4].Value = maestro.ColorEtiqueta;
                     row.Cells[5].Value = maestro.Activo ? "Activo" : "Inactivo";
 
-                    // Colorear filas según estado
                     if (!maestro.Activo)
                     {
                         row.DefaultCellStyle.BackColor = Color.LightGray;
@@ -270,31 +269,27 @@ namespace EtiquetasApp.Forms
                 upc2TextBox.Text = maestro.UPC2;
                 observacionesTextBox.Text = maestro.Observaciones;
 
-                // Seleccionar tipo de etiqueta
                 var tipoIndex = tipoEtiquetaComboBox.Items.Cast<string>()
                     .ToList().FindIndex(item => item.Contains(maestro.TipoEtiqueta));
                 if (tipoIndex >= 0)
                     tipoEtiquetaComboBox.SelectedIndex = tipoIndex;
 
-                // Seleccionar color
                 var colorIndex = colorComboBox.Items.Cast<string>()
                     .ToList().FindIndex(item => item.Equals(maestro.ColorEtiqueta, StringComparison.OrdinalIgnoreCase));
                 if (colorIndex >= 0)
                     colorComboBox.SelectedIndex = colorIndex;
 
-                velocidadNumericUpDown.Value = maestro.VelocidadImpresion;
+                velocidadNumericUpDown.Value = maestro.VelocidadImpresionConfig;
                 temperaturaNumericUpDown.Value = maestro.TemperaturaImpresion;
                 requireLogoCheckBox.Checked = maestro.RequiereLogo;
                 logoTextBox.Text = maestro.NombreLogo ?? "";
 
-                // Mostrar información adicional
                 lblFechaCreacion.Text = maestro.FechaCreacion.ToString("dd/MM/yyyy HH:mm");
                 lblUsuarioCreacion.Text = maestro.UsuarioCreacion ?? "";
                 lblFechaModificacion.Text = maestro.FechaModificacion?.ToString("dd/MM/yyyy HH:mm") ?? "";
                 lblEstado.Text = maestro.Activo ? "Activo" : "Inactivo";
                 lblEstado.ForeColor = maestro.Activo ? Color.Green : Color.Red;
 
-                // Mostrar validaciones
                 ActualizarValidaciones(maestro);
             }
             catch (Exception ex)
@@ -319,7 +314,6 @@ namespace EtiquetasApp.Forms
             lblValidaciones.Text = validaciones.Count > 0 ? string.Join(", ", validaciones) : "✓ Configuración válida";
             lblValidaciones.ForeColor = validaciones.Count > 0 ? Color.Red : Color.Green;
 
-            // Mostrar ejemplo de UPC
             lblEjemploUPC.Text = $"Ejemplo: {maestro.UPC1}";
         }
 
@@ -341,7 +335,6 @@ namespace EtiquetasApp.Forms
 
                 if (esNuevoRegistro)
                 {
-                    // Verificar que no exista ya
                     if (maestrosCodigos.Any(m => m.PartId == partIdDatoTextBox.Text.Trim()))
                     {
                         MostrarError("Ya existe un maestro con ese Part ID");
@@ -354,13 +347,12 @@ namespace EtiquetasApp.Forms
                     maestroActual.FechaCreacion = DateTime.Now;
                 }
 
-                // Actualizar datos
                 maestroActual.Descripcion = descripcionTextBox.Text.Trim();
                 maestroActual.UPC1 = upc1TextBox.Text.Trim();
                 maestroActual.UPC2 = upc2TextBox.Text.Trim();
                 maestroActual.TipoEtiqueta = tipoEtiquetaComboBox.SelectedItem.ToString();
                 maestroActual.ColorEtiqueta = colorComboBox.SelectedItem.ToString();
-                maestroActual.VelocidadImpresion = (int)velocidadNumericUpDown.Value;
+                maestroActual.VelocidadImpresionConfig = (int)velocidadNumericUpDown.Value;
                 maestroActual.TemperaturaImpresion = (int)temperaturaNumericUpDown.Value;
                 maestroActual.RequiereLogo = requireLogoCheckBox.Checked;
                 maestroActual.NombreLogo = logoTextBox.Text.Trim();
@@ -368,7 +360,6 @@ namespace EtiquetasApp.Forms
                 maestroActual.UsuarioModificacion = Environment.UserName;
                 maestroActual.FechaModificacion = DateTime.Now;
 
-                // Guardar en base de datos
                 if (esNuevoRegistro)
                 {
                     DatabaseService.InsertMaestroCodigoEtiqueta(maestroActual);
@@ -411,8 +402,7 @@ namespace EtiquetasApp.Forms
             var maestro = ObtenerMaestroSeleccionado();
             if (maestro == null) return;
 
-            var result = MessageBox.Show($"¿Está seguro de desactivar el maestro '{maestro.PartId}'?\n\n" +
-                                       "Esta acción no elimina el registro, solo lo desactiva.",
+            var result = MessageBox.Show($"¿Está seguro de desactivar el maestro '{maestro.PartId}'?\n\nEsta acción no elimina el registro, solo lo desactiva.",
                                        "Confirmar Desactivación", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
 
             if (result == DialogResult.Yes)
@@ -482,30 +472,11 @@ namespace EtiquetasApp.Forms
                         return;
                     }
 
-                    // Crear clon
-                    var clon = new MaestroCodigoEtiqueta
-                    {
-                        PartId = nuevoPartId,
-                        Descripcion = maestro.Descripcion,
-                        UPC1 = maestro.UPC1,
-                        UPC2 = maestro.UPC2,
-                        TipoEtiqueta = maestro.TipoEtiqueta,
-                        ColorEtiqueta = maestro.ColorEtiqueta,
-                        VelocidadImpresion = maestro.VelocidadImpresion,
-                        TemperaturaImpresion = maestro.TemperaturaImpresion,
-                        RequiereLogo = maestro.RequiereLogo,
-                        NombreLogo = maestro.NombreLogo,
-                        Observaciones = $"Clonado de {maestro.PartId}",
-                        UsuarioCreacion = Environment.UserName,
-                        FechaCreacion = DateTime.Now,
-                        Activo = true
-                    };
-
+                    var clon = maestro.Clonar(nuevoPartId, Environment.UserName);
                     DatabaseService.InsertMaestroCodigoEtiqueta(clon);
                     CargarDatos();
                     MostrarMensaje("Maestro clonado correctamente", false);
 
-                    // Seleccionar el nuevo registro
                     SeleccionarMaestro(nuevoPartId);
                 }
             }
@@ -524,7 +495,6 @@ namespace EtiquetasApp.Forms
                 return;
             }
 
-            // Validación básica
             if (upc.Length < 8 || upc.Length > 14)
             {
                 MostrarError("El código UPC debe tener entre 8 y 14 dígitos");
@@ -551,7 +521,6 @@ namespace EtiquetasApp.Forms
                     return;
                 }
 
-                // Generar UPC basado en Part ID
                 var baseCode = partId.Length > 8 ? partId.Substring(0, 8) : partId.PadRight(8, '0');
                 var numerosPart = new string(baseCode.Where(char.IsDigit).ToArray());
 
@@ -574,7 +543,6 @@ namespace EtiquetasApp.Forms
 
         private void TipoEtiquetaComboBox_SelectedIndexChanged(object sender, EventArgs e)
         {
-            // Ajustar configuraciones según el tipo de etiqueta
             var tipo = tipoEtiquetaComboBox.SelectedItem?.ToString();
 
             switch (tipo)
@@ -618,7 +586,7 @@ namespace EtiquetasApp.Forms
             }
             else if (string.IsNullOrEmpty(logoTextBox.Text))
             {
-                logoTextBox.Text = "PINO"; // Logo por defecto
+                logoTextBox.Text = "PINO";
             }
         }
 
@@ -644,8 +612,7 @@ namespace EtiquetasApp.Forms
 
         private void HabilitarEdicion(bool habilitar)
         {
-            // Habilitar/deshabilitar controles de edición
-            partIdDatoTextBox.ReadOnly = !habilitar || !esNuevoRegistro; // Part ID solo editable en nuevos
+            partIdDatoTextBox.ReadOnly = !habilitar || !esNuevoRegistro;
             descripcionTextBox.ReadOnly = !habilitar;
             upc1TextBox.ReadOnly = !habilitar;
             upc2TextBox.ReadOnly = !habilitar;
@@ -661,7 +628,6 @@ namespace EtiquetasApp.Forms
             btnValidarUPC.Enabled = habilitar;
             btnGenerarUPC.Enabled = habilitar;
 
-            // Cambiar colores de fondo
             var colorFondo = habilitar ? SystemColors.Window : SystemColors.Control;
             partIdDatoTextBox.BackColor = colorFondo;
             descripcionTextBox.BackColor = colorFondo;
@@ -669,12 +635,10 @@ namespace EtiquetasApp.Forms
             upc2TextBox.BackColor = colorFondo;
             observacionesTextBox.BackColor = colorFondo;
 
-            // Habilitar/deshabilitar botones
             btnGuardar.Enabled = habilitar;
             btnCancelar.Enabled = habilitar;
             btnNuevo.Enabled = !habilitar;
 
-            // Habilitar/deshabilitar grilla
             maestrosGrid.Enabled = !habilitar;
         }
 
@@ -769,7 +733,6 @@ namespace EtiquetasApp.Forms
             MessageBox.Show(mensaje, "Información", MessageBoxButtons.OK, icon);
         }
 
-        // Método público para pre-cargar un Part ID
         public void CargarPartId(string partId)
         {
             if (!string.IsNullOrEmpty(partId))
@@ -781,7 +744,6 @@ namespace EtiquetasApp.Forms
         }
     }
 
-    // Clase auxiliar para input dialogs
     public partial class InputDialog : Form
     {
         public string InputText { get; private set; }

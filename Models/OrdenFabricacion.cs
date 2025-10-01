@@ -226,30 +226,20 @@ namespace EtiquetasApp.Models
         }
     }
 
-    // Enumeración para estados de orden
-    public enum EstadoOrden
-    {
-        ACTIVE,
-        IN_PROCESS,
-        COMPLETED,
-        CANCELLED,
-        PAUSED,
-        PENDING
-    }
-
-    // Extensiones para EstadoOrden
+    // Extensiones para EstadoOrden - utiliza el enum de TipoEtiqueta.cs
     public static class EstadoOrdenExtensions
     {
         public static string GetDisplayName(this EstadoOrden estado)
         {
             return estado switch
             {
-                EstadoOrden.ACTIVE => "Activa",
-                EstadoOrden.IN_PROCESS => "En Proceso",
-                EstadoOrden.COMPLETED => "Completada",
-                EstadoOrden.CANCELLED => "Cancelada",
-                EstadoOrden.PAUSED => "Pausada",
-                EstadoOrden.PENDING => "Pendiente",
+                EstadoOrden.Programada => "Programada",
+                EstadoOrden.PorIniciar => "Por Iniciar",
+                EstadoOrden.EnProceso => "En Proceso",
+                EstadoOrden.Pausada => "Pausada",
+                EstadoOrden.Completada => "Completada",
+                EstadoOrden.Cancelada => "Cancelada",
+                EstadoOrden.Vencida => "Vencida",
                 _ => estado.ToString()
             };
         }
@@ -258,12 +248,13 @@ namespace EtiquetasApp.Models
         {
             return estado switch
             {
-                EstadoOrden.ACTIVE => "Orden activa, lista para iniciar",
-                EstadoOrden.IN_PROCESS => "Orden en proceso de fabricación",
-                EstadoOrden.COMPLETED => "Orden completada exitosamente",
-                EstadoOrden.CANCELLED => "Orden cancelada",
-                EstadoOrden.PAUSED => "Orden pausada temporalmente",
-                EstadoOrden.PENDING => "Orden pendiente de aprobación",
+                EstadoOrden.Programada => "Orden programada para producción",
+                EstadoOrden.PorIniciar => "Orden próxima a iniciar",
+                EstadoOrden.EnProceso => "Orden en proceso de fabricación",
+                EstadoOrden.Completada => "Orden completada exitosamente",
+                EstadoOrden.Cancelada => "Orden cancelada",
+                EstadoOrden.Pausada => "Orden pausada temporalmente",
+                EstadoOrden.Vencida => "Fecha de entrega vencida",
                 _ => "Estado desconocido"
             };
         }

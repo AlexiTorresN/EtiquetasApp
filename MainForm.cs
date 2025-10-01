@@ -3,6 +3,8 @@ using EtiquetasApp.Services;
 using EtiquetasApp.Setup;
 using System;
 using System.Windows.Forms;
+using Timer = System.Windows.Forms.Timer;
+
 
 namespace EtiquetasApp
 {
@@ -34,7 +36,7 @@ namespace EtiquetasApp
             timer.Start();
         }
 
-        private void Timer_Tick(object sender, EventArgs e)
+        private void Timer_Tick(object? sender, EventArgs e)
         {
             fechaLabel.Text = DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss");
         }
@@ -55,15 +57,15 @@ namespace EtiquetasApp
             ShowMdiForm<Forms.ConsultaSolicitudesForm>();
         }
 
-        private void ReactivaSolicitud_Click(object sender, EventArgs e)
-        {
-            ShowMdiForm<Forms.ReactivaSolicitudForm>();
-        }
+        //private void ReactivaSolicitud_Click(object sender, EventArgs e)
+        //{
+        //    ShowMdiForm<Forms.ReactivaSolicitudForm>();
+        //}
 
-        private void EliminaSolicitud_Click(object sender, EventArgs e)
-        {
-            ShowMdiForm<Forms.EliminaSolicitudForm>();
-        }
+        //private void EliminaSolicitud_Click(object sender, EventArgs e)
+        //{
+        //    ShowMdiForm<Forms.EliminaSolicitudForm>();
+        //}
 
         private void CodificaEtiquetas_Click(object sender, EventArgs e)
         {
@@ -80,45 +82,45 @@ namespace EtiquetasApp
             ShowMdiForm<Forms.EtiquetasDualForm>();
         }
 
-        private void EtiquetasLaqueado_Click(object sender, EventArgs e)
-        {
-            ShowMdiForm<Forms.EtiquetasLaqueadoForm>();
-        }
+        //private void EtiquetasLaqueado_Click(object sender, EventArgs e)
+        //{
+        //    ShowMdiForm<Forms.EtiquetasLaqueadoForm>();
+        //}
 
-        private void EtiquetasGardenState_Click(object sender, EventArgs e)
-        {
-            ShowMdiForm<Forms.EtiquetasGardenStateForm>();
-        }
+        //private void EtiquetasGardenState_Click(object sender, EventArgs e)
+        //{
+        //    ShowMdiForm<Forms.EtiquetasGardenStateForm>();
+        //}
 
-        private void EtiquetasBicolor_Click(object sender, EventArgs e)
-        {
-            ShowMdiForm<Forms.EtiquetasBicolorForm>();
-        }
+        //private void EtiquetasBicolor_Click(object sender, EventArgs e)
+        //{
+        //    ShowMdiForm<Forms.EtiquetasBicolorForm>();
+        //}
 
-        private void EtiquetasMolduras_Click(object sender, EventArgs e)
-        {
-            ShowMdiForm<Forms.EtiquetasMoldurasForm>();
-        }
+        //private void EtiquetasMolduras_Click(object sender, EventArgs e)
+        //{
+        //    ShowMdiForm<Forms.EtiquetasMoldurasForm>();
+        //}
 
-        private void EtiquetasEAN13_Click(object sender, EventArgs e)
-        {
-            ShowMdiForm<Forms.EtiquetasEAN13Form>();
-        }
+        //private void EtiquetasEAN13_Click(object sender, EventArgs e)
+        //{
+        //    ShowMdiForm<Forms.EtiquetasEAN13Form>();
+        //}
 
-        private void EtiquetasI2de5_Click(object sender, EventArgs e)
-        {
-            ShowMdiForm<Forms.EtiquetasI2de5Form>();
-        }
+        //private void EtiquetasI2de5_Click(object sender, EventArgs e)
+        //{
+        //    ShowMdiForm<Forms.EtiquetasI2de5Form>();
+        //}
 
-        private void ConfigurarImpresoras_Click(object sender, EventArgs e)
-        {
-            ShowMdiForm<Forms.ConfiguracionImpresorasForm>();
-        }
+        //private void ConfigurarImpresoras_Click(object sender, EventArgs e)
+        //{
+        //    ShowMdiForm<Forms.ConfiguracionImpresorasForm>();
+        //}
 
-        private void ConfigurarConexion_Click(object sender, EventArgs e)
-        {
-            ShowMdiForm<Forms.ConfiguracionConexionForm>();
-        }
+        //private void ConfigurarConexion_Click(object sender, EventArgs e)
+        //{
+        //    ShowMdiForm<Forms.ConfiguracionConexionForm>();
+        //}
 
         private void Salir_Click(object sender, EventArgs e)
         {

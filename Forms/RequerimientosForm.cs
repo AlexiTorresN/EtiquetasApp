@@ -33,21 +33,18 @@ namespace EtiquetasApp.Forms
 
         private void ConfigurarEventos()
         {
-            // Eventos de filtros
             soloSinEtiquetasCheckBox.CheckedChanged += FiltroChanged;
             fechaDesdeDateTime.ValueChanged += FiltroChanged;
             fechaHastaDateTime.ValueChanged += FiltroChanged;
             ordenFabTextBox.TextChanged += FiltroChanged;
             descripcionTextBox.TextChanged += FiltroChanged;
 
-            // Eventos de botones
             btnActualizar.Click += BtnActualizar_Click;
             btnLimpiarFiltros.Click += BtnLimpiarFiltros_Click;
             btnCrearSolicitud.Click += BtnCrearSolicitud_Click;
             btnCrearMaestro.Click += BtnCrearMaestro_Click;
             btnExportar.Click += BtnExportar_Click;
 
-            // Eventos de grilla
             requerimientosGrid.SelectionChanged += RequerimientosGrid_SelectionChanged;
             requerimientosGrid.CellDoubleClick += RequerimientosGrid_CellDoubleClick;
             requerimientosGrid.CellFormatting += RequerimientosGrid_CellFormatting;
@@ -55,11 +52,8 @@ namespace EtiquetasApp.Forms
 
         private void ConfigurarFiltros()
         {
-            // Configurar fechas por defecto
             fechaDesdeDateTime.Value = DateTime.Now.Date;
             fechaHastaDateTime.Value = DateTime.Now.AddDays(30);
-
-            // Configurar checkbox por defecto
             soloSinEtiquetasCheckBox.Checked = true;
         }
 
@@ -67,13 +61,10 @@ namespace EtiquetasApp.Forms
         {
             try
             {
-                // Cargar órdenes de requerimientos y maestros de códigos
                 ordenesRequerimientos = DatabaseService.GetOrdenesRequerimientos();
-                maestrosCodigos = DatabaseService.MaestroCodigosEtiquetas;
+                maestrosCodigos = DatabaseService.GetMaestroCodigosEtiquetas();
 
-                // Marcar órdenes que ya tienen códigos configurados
                 MarcarOrdenesConCodigos();
-
                 AplicarFiltros();
                 ActualizarEstadisticas();
             }
@@ -101,7 +92,7 @@ namespace EtiquetasApp.Forms
                     .Where(o => FiltrarPorOrdenFab(o))
                     .Where(o => FiltrarPorDescripcion(o))
                     .Where(o => FiltrarPorEtiquetas(o))
-                    .OrderBy(o => o.FechaRequerida)
+                    .OrderBy(o => o.FechaProgramada)
                     .ThenByDescending(o => o.Prioridad)
                     .ToList();
 
@@ -116,15 +107,17 @@ namespace EtiquetasApp.Forms
 
         private bool FiltrarPorFechas(OrdenFabricacion orden)
         {
-            return orden.FechaRequerida.Date >= fechaDesdeDateTime.Value.Date &&
-                   orden.FechaRequerida.Date <= fechaHastaDateTime.Value.Date;
+            if (!orden.FechaProgramada.HasValue) return false;
+
+            return orden.FechaProgramada.Value.Date >= fechaDesdeDateTime.Value.Date &&
+                   orden.FechaProgramada.Value.Date <= fechaHastaDateTime.Value.Date;
         }
 
         private bool FiltrarPorOrdenFab(OrdenFabricacion orden)
         {
             if (string.IsNullOrEmpty(ordenFabTextBox.Text)) return true;
 
-            return orden.OrdenFab.ToUpper().Contains(ordenFabTextBox.Text.ToUpper()) ||
+            return orden.BaseId.ToUpper().Contains(ordenFabTextBox.Text.ToUpper()) ||
                    orden.PartId.ToUpper().Contains(ordenFabTextBox.Text.ToUpper());
         }
 
@@ -132,7 +125,7 @@ namespace EtiquetasApp.Forms
         {
             if (string.IsNullOrEmpty(descripcionTextBox.Text)) return true;
 
-            return orden.Descripcion.ToUpper().Contains(descripcionTextBox.Text.ToUpper());
+            return orden.Descripcion?.ToUpper().Contains(descripcionTextBox.Text.ToUpper()) ?? false;
         }
 
         private bool FiltrarPorEtiquetas(OrdenFabricacion orden)
@@ -153,18 +146,17 @@ namespace EtiquetasApp.Forms
                     var row = new DataGridViewRow();
                     row.CreateCells(requerimientosGrid);
 
-                    row.Cells[0].Value = orden.OrdenFab;
+                    row.Cells[0].Value = orden.BaseId;
                     row.Cells[1].Value = orden.PartId;
                     row.Cells[2].Value = orden.Descripcion;
                     row.Cells[3].Value = orden.Cantidad;
-                    row.Cells[4].Value = orden.FechaInicio.ToString("dd/MM/yyyy");
-                    row.Cells[5].Value = orden.FechaRequerida.ToString("dd/MM/yyyy");
+                    row.Cells[4].Value = orden.FechaInicio?.ToString("dd/MM/yyyy") ?? "";
+                    row.Cells[5].Value = orden.FechaProgramada?.ToString("dd/MM/yyyy") ?? "";
                     row.Cells[6].Value = orden.EstadoDescripcion;
                     row.Cells[7].Value = orden.PrioridadDescripcion;
                     row.Cells[8].Value = orden.TieneCodigoEtiqueta ? "Sí" : "No";
-                    row.Cells[9].Value = orden.DiasParaEntrega;
+                    row.Cells[9].Value = orden.DiasParaProgramada?.ToString() ?? "";
 
-                    // Colorear filas según estado y prioridad
                     ConfigurarColorFila(row, orden);
 
                     row.Tag = orden;
@@ -187,7 +179,7 @@ namespace EtiquetasApp.Forms
             {
                 row.DefaultCellStyle.BackColor = Color.LightCoral;
             }
-            else if (orden.DiasParaEntrega <= 7)
+            else if (orden.DiasParaProgramada.HasValue && orden.DiasParaProgramada <= 7)
             {
                 row.DefaultCellStyle.BackColor = Color.LightYellow;
             }
@@ -213,7 +205,6 @@ namespace EtiquetasApp.Forms
                 lblUrgentes.Text = urgentes.ToString("N0");
                 lblTotalCantidad.Text = totalCantidad.ToString("N0");
 
-                // Calcular porcentaje de cobertura
                 var porcentajeCobertura = total > 0 ? (conCodigos * 100.0 / total) : 0;
                 lblPorcentajeCobertura.Text = $"{porcentajeCobertura:F1}%";
 
@@ -263,9 +254,7 @@ namespace EtiquetasApp.Forms
 
             try
             {
-                // Abrir formulario de solicitudes con datos pre-cargados
                 var solicitudForm = new SolicitudesEtiquetasForm();
-                // Aquí se podría pre-cargar la orden seleccionada
                 solicitudForm.MdiParent = this.MdiParent;
                 solicitudForm.WindowState = FormWindowState.Maximized;
                 solicitudForm.Show();
@@ -293,9 +282,8 @@ namespace EtiquetasApp.Forms
 
             try
             {
-                // Abrir formulario de codificación con datos pre-cargados
                 var maestroForm = new CodificaEtiquetasForm();
-                // Aquí se podría pre-cargar la orden seleccionada
+                maestroForm.CargarPartId(ordenSeleccionada.PartId);
                 maestroForm.MdiParent = this.MdiParent;
                 maestroForm.WindowState = FormWindowState.Maximized;
                 maestroForm.Show();
@@ -333,13 +321,11 @@ namespace EtiquetasApp.Forms
         {
             using (var writer = new System.IO.StreamWriter(archivo, false, System.Text.Encoding.UTF8))
             {
-                // Escribir encabezados
                 writer.WriteLine("Orden Fab,Part ID,Descripción,Cantidad,Fecha Inicio,Fecha Requerida,Estado,Prioridad,Tiene Códigos,Días para Entrega");
 
-                // Escribir datos
                 foreach (var orden in ordenesFiltradas)
                 {
-                    writer.WriteLine($"{orden.OrdenFab},{orden.PartId},\"{orden.Descripcion}\",{orden.Cantidad},{orden.FechaInicio:dd/MM/yyyy},{orden.FechaRequerida:dd/MM/yyyy},{orden.EstadoDescripcion},{orden.PrioridadDescripcion},{(orden.TieneCodigoEtiqueta ? "Sí" : "No")},{orden.DiasParaEntrega}");
+                    writer.WriteLine($"{orden.BaseId},{orden.PartId},\"{orden.Descripcion}\",{orden.Cantidad},{orden.FechaInicio?.ToString("dd/MM/yyyy") ?? ""},{orden.FechaProgramada?.ToString("dd/MM/yyyy") ?? ""},{orden.EstadoDescripcion},{orden.PrioridadDescripcion},{(orden.TieneCodigoEtiqueta ? "Sí" : "No")},{orden.DiasParaProgramada?.ToString() ?? ""}");
                 }
             }
         }
@@ -357,15 +343,15 @@ namespace EtiquetasApp.Forms
         {
             if (orden != null)
             {
-                var detalle = $"Orden: {orden.OrdenFab}\n";
+                var detalle = $"Orden: {orden.BaseId}\n";
                 detalle += $"Parte: {orden.PartId}\n";
                 detalle += $"Descripción: {orden.Descripcion}\n";
                 detalle += $"Cantidad: {orden.Cantidad:N0}\n";
                 detalle += $"Estado: {orden.EstadoDescripcion}\n";
                 detalle += $"Prioridad: {orden.PrioridadDescripcion}\n";
-                detalle += $"Fecha Inicio: {orden.FechaInicio:dd/MM/yyyy}\n";
-                detalle += $"Fecha Requerida: {orden.FechaRequerida:dd/MM/yyyy}\n";
-                detalle += $"Días para Entrega: {orden.DiasParaEntrega}\n";
+                detalle += $"Fecha Inicio: {orden.FechaInicio?.ToString("dd/MM/yyyy") ?? "N/A"}\n";
+                detalle += $"Fecha Programada: {orden.FechaProgramada?.ToString("dd/MM/yyyy") ?? "N/A"}\n";
+                detalle += $"Días para Entrega: {orden.DiasParaProgramada?.ToString() ?? "N/A"}\n";
                 detalle += $"Tiene Códigos: {(orden.TieneCodigoEtiqueta ? "Sí" : "No")}";
 
                 if (orden.EsUrgente)
@@ -402,7 +388,6 @@ namespace EtiquetasApp.Forms
 
         private void RequerimientosGrid_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
         {
-            // Formatear celdas específicas
             if (e.ColumnIndex == 8 && e.Value != null) // Columna "Tiene Códigos"
             {
                 var valor = e.Value.ToString();
@@ -420,7 +405,8 @@ namespace EtiquetasApp.Forms
 
             if (e.ColumnIndex == 9 && e.Value != null) // Columna "Días para Entrega"
             {
-                if (int.TryParse(e.Value.ToString(), out int dias))
+                var valorStr = e.Value.ToString();
+                if (!string.IsNullOrEmpty(valorStr) && int.TryParse(valorStr, out int dias))
                 {
                     if (dias < 0)
                     {
@@ -456,21 +442,19 @@ namespace EtiquetasApp.Forms
             MessageBox.Show(mensaje, "Información", MessageBoxButtons.OK, icon);
         }
 
-        // Método público para actualizar desde otros formularios
         public void ActualizarDatos()
         {
             CargarDatos();
         }
 
-        // Método para pre-seleccionar una orden específica
-        public void SeleccionarOrden(string ordenFab)
+        public void SeleccionarOrden(string baseId)
         {
-            if (!string.IsNullOrEmpty(ordenFab))
+            if (!string.IsNullOrEmpty(baseId))
             {
                 foreach (DataGridViewRow row in requerimientosGrid.Rows)
                 {
                     var orden = row.Tag as OrdenFabricacion;
-                    if (orden != null && orden.OrdenFab.Equals(ordenFab, StringComparison.OrdinalIgnoreCase))
+                    if (orden != null && orden.BaseId.Equals(baseId, StringComparison.OrdinalIgnoreCase))
                     {
                         row.Selected = true;
                         requerimientosGrid.CurrentCell = row.Cells[0];

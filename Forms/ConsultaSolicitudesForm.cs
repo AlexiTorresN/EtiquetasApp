@@ -31,7 +31,6 @@ namespace EtiquetasApp.Forms
 
         private void ConfigurarEventos()
         {
-            // Eventos de filtros
             tipoEtiquetaComboBox.SelectedIndexChanged += FiltroChanged;
             estadoComboBox.SelectedIndexChanged += FiltroChanged;
             fechaDesdeDateTime.ValueChanged += FiltroChanged;
@@ -39,15 +38,11 @@ namespace EtiquetasApp.Forms
             ordenFabTextBox.TextChanged += FiltroChanged;
             descripcionTextBox.TextChanged += FiltroChanged;
 
-            // Eventos de botones
             btnBuscar.Click += BtnBuscar_Click;
             btnLimpiar.Click += BtnLimpiar_Click;
             btnExportar.Click += BtnExportar_Click;
             btnImprimir.Click += BtnImprimir_Click;
-            btnEliminar.Click += BtnEliminar_Click;
-            btnReactivar.Click += BtnReactivar_Click;
 
-            // Eventos de grilla
             solicitudesGrid.SelectionChanged += SolicitudesGrid_SelectionChanged;
             solicitudesGrid.CellDoubleClick += SolicitudesGrid_CellDoubleClick;
             solicitudesGrid.CellFormatting += SolicitudesGrid_CellFormatting;
@@ -55,7 +50,6 @@ namespace EtiquetasApp.Forms
 
         private void ConfigurarFiltros()
         {
-            // Configurar ComboBox de tipo de etiqueta
             tipoEtiquetaComboBox.Items.Add("Todos");
             foreach (TipoEtiqueta tipo in Enum.GetValues(typeof(TipoEtiqueta)))
             {
@@ -63,15 +57,12 @@ namespace EtiquetasApp.Forms
             }
             tipoEtiquetaComboBox.SelectedIndex = 0;
 
-            // Configurar ComboBox de estado
             estadoComboBox.Items.Add("Todos");
-            foreach (EstadoSolicitud estado in Enum.GetValues(typeof(EstadoSolicitud)))
-            {
-                estadoComboBox.Items.Add(estado.GetDisplayName());
-            }
+            estadoComboBox.Items.Add("Pendiente");
+            estadoComboBox.Items.Add("Completada");
+            estadoComboBox.Items.Add("Vencida");
             estadoComboBox.SelectedIndex = 0;
 
-            // Configurar fechas
             fechaDesdeDateTime.Value = DateTime.Now.AddMonths(-1);
             fechaHastaDateTime.Value = DateTime.Now.AddDays(7);
         }
@@ -127,7 +118,7 @@ namespace EtiquetasApp.Forms
             if (estadoComboBox.SelectedIndex <= 0) return true;
 
             var estadoSeleccionado = estadoComboBox.SelectedItem.ToString();
-            return solicitud.EstadoSolicitud == estadoSeleccionado;
+            return solicitud.EstadoDescripcion == estadoSeleccionado;
         }
 
         private bool FiltrarPorFechas(SolicitudEtiqueta solicitud)
@@ -140,14 +131,14 @@ namespace EtiquetasApp.Forms
         {
             if (string.IsNullOrEmpty(ordenFabTextBox.Text)) return true;
 
-            return solicitud.OrdenFab.ToUpper().Contains(ordenFabTextBox.Text.ToUpper());
+            return solicitud.OrdenFab.ToString().Contains(ordenFabTextBox.Text);
         }
 
         private bool FiltrarPorDescripcion(SolicitudEtiqueta solicitud)
         {
             if (string.IsNullOrEmpty(descripcionTextBox.Text)) return true;
 
-            return solicitud.Descripcion.ToUpper().Contains(descripcionTextBox.Text.ToUpper());
+            return solicitud.Descripcion?.ToUpper().Contains(descripcionTextBox.Text.ToUpper()) ?? false;
         }
 
         private void CargarGrilla()
@@ -169,14 +160,13 @@ namespace EtiquetasApp.Forms
                     row.Cells[5].Value = solicitud.CantidadFabricada;
                     row.Cells[6].Value = solicitud.CantidadPendiente;
                     row.Cells[7].Value = solicitud.Color;
-                    row.Cells[8].Value = solicitud.EstadoSolicitud;
+                    row.Cells[8].Value = solicitud.EstadoDescripcion;
                     row.Cells[9].Value = solicitud.FechaSolicitud.ToString("dd/MM/yyyy");
                     row.Cells[10].Value = solicitud.FechaRequerida.ToString("dd/MM/yyyy");
                     row.Cells[11].Value = solicitud.FechaFabricacion?.ToString("dd/MM/yyyy") ?? "";
-                    row.Cells[12].Value = solicitud.UsuarioSolicita ?? "";
+                    row.Cells[12].Value = solicitud.Usuario ?? "";
                     row.Cells[13].Value = solicitud.Observaciones;
 
-                    // Colorear filas según estado y urgencia
                     ConfigurarColorFila(row, solicitud);
 
                     row.Tag = solicitud;
@@ -191,12 +181,7 @@ namespace EtiquetasApp.Forms
 
         private void ConfigurarColorFila(DataGridViewRow row, SolicitudEtiqueta solicitud)
         {
-            if (!solicitud.Activo)
-            {
-                row.DefaultCellStyle.BackColor = Color.LightGray;
-                row.DefaultCellStyle.ForeColor = Color.DarkGray;
-            }
-            else if (solicitud.EstaCompleta)
+            if (solicitud.EstaCompletada)
             {
                 row.DefaultCellStyle.BackColor = Color.LightGreen;
             }
@@ -204,9 +189,13 @@ namespace EtiquetasApp.Forms
             {
                 row.DefaultCellStyle.BackColor = Color.LightCoral;
             }
-            else if (solicitud.DiasParaVencimiento <= 3)
+            else if (solicitud.DiasVencimiento <= 3 && solicitud.DiasVencimiento >= 0)
             {
                 row.DefaultCellStyle.BackColor = Color.LightYellow;
+            }
+            else if (solicitud.EstaVencida)
+            {
+                row.DefaultCellStyle.BackColor = Color.LightGray;
             }
         }
 
@@ -215,8 +204,8 @@ namespace EtiquetasApp.Forms
             try
             {
                 var total = solicitudesFiltradas.Count;
-                var completadas = solicitudesFiltradas.Count(s => s.EstaCompleta);
-                var pendientes = solicitudesFiltradas.Count(s => !s.EstaCompleta && s.Activo);
+                var completadas = solicitudesFiltradas.Count(s => s.EstaCompletada);
+                var pendientes = solicitudesFiltradas.Count(s => !s.EstaCompletada);
                 var urgentes = solicitudesFiltradas.Count(s => s.EsUrgente);
                 var totalEtiquetas = solicitudesFiltradas.Sum(s => s.CantidadPedida);
                 var etiquetasFabricadas = solicitudesFiltradas.Sum(s => s.CantidadFabricada);
@@ -230,7 +219,6 @@ namespace EtiquetasApp.Forms
                 lblEtiquetasFabricadas.Text = etiquetasFabricadas.ToString("N0");
                 lblEtiquetasPendientes.Text = etiquetasPendientes.ToString("N0");
 
-                // Calcular porcentaje de avance
                 var porcentajeAvance = totalEtiquetas > 0 ? (etiquetasFabricadas * 100.0 / totalEtiquetas) : 0;
                 lblPorcentajeAvance.Text = $"{porcentajeAvance:F1}%";
 
@@ -244,7 +232,6 @@ namespace EtiquetasApp.Forms
 
         private void FiltroChanged(object sender, EventArgs e)
         {
-            // Aplicar filtros automáticamente al cambiar cualquier filtro
             if (autoFiltrarCheckBox.Checked)
             {
                 AplicarFiltros();
@@ -279,13 +266,13 @@ namespace EtiquetasApp.Forms
             {
                 using (var saveDialog = new SaveFileDialog())
                 {
-                    saveDialog.Filter = "Archivos CSV|*.csv|Archivos Excel|*.xlsx";
+                    saveDialog.Filter = "Archivos CSV|*.csv";
                     saveDialog.Title = "Exportar Solicitudes";
                     saveDialog.FileName = $"Solicitudes_Etiquetas_{DateTime.Now:yyyyMMdd_HHmmss}";
 
                     if (saveDialog.ShowDialog() == DialogResult.OK)
                     {
-                        ExportarDatos(saveDialog.FileName);
+                        ExportarCSV(saveDialog.FileName);
                         MostrarMensaje("Datos exportados correctamente", false);
                     }
                 }
@@ -296,41 +283,17 @@ namespace EtiquetasApp.Forms
             }
         }
 
-        private void ExportarDatos(string archivo)
-        {
-            // Implementar exportación según extensión del archivo
-            var extension = System.IO.Path.GetExtension(archivo).ToLower();
-
-            if (extension == ".csv")
-            {
-                ExportarCSV(archivo);
-            }
-            else if (extension == ".xlsx")
-            {
-                ExportarExcel(archivo);
-            }
-        }
-
         private void ExportarCSV(string archivo)
         {
             using (var writer = new System.IO.StreamWriter(archivo, false, System.Text.Encoding.UTF8))
             {
-                // Escribir encabezados
                 writer.WriteLine("ID,Orden Fab,Descripción,Tipo,Cant. Pedida,Cant. Fabricada,Cant. Pendiente,Color,Estado,Fecha Solicitud,Fecha Requerida,Fecha Fabricación,Usuario,Observaciones");
 
-                // Escribir datos
                 foreach (var solicitud in solicitudesFiltradas)
                 {
-                    writer.WriteLine($"{solicitud.IdSolicitud},{solicitud.OrdenFab},\"{solicitud.Descripcion}\",{solicitud.TipoEtiqueta},{solicitud.CantidadPedida},{solicitud.CantidadFabricada},{solicitud.CantidadPendiente},{solicitud.Color},{solicitud.EstadoSolicitud},{solicitud.FechaSolicitud:dd/MM/yyyy},{solicitud.FechaRequerida:dd/MM/yyyy},{solicitud.FechaFabricacion?.ToString("dd/MM/yyyy") ?? ""},{solicitud.UsuarioSolicita},\"{solicitud.Observaciones}\"");
+                    writer.WriteLine($"{solicitud.IdSolicitud},{solicitud.OrdenFab},\"{solicitud.Descripcion}\",{solicitud.TipoEtiqueta},{solicitud.CantidadPedida},{solicitud.CantidadFabricada},{solicitud.CantidadPendiente},{solicitud.Color},{solicitud.EstadoDescripcion},{solicitud.FechaSolicitud:dd/MM/yyyy},{solicitud.FechaRequerida:dd/MM/yyyy},{solicitud.FechaFabricacion?.ToString("dd/MM/yyyy") ?? ""},{solicitud.Usuario},\"{solicitud.Observaciones}\"");
                 }
             }
-        }
-
-        private void ExportarExcel(string archivo)
-        {
-            // Implementación básica de exportación a Excel
-            // En una implementación real, usarías una librería como EPPlus o ClosedXML
-            MostrarMensaje("Exportación a Excel no implementada. Use formato CSV.", true);
         }
 
         private void BtnImprimir_Click(object sender, EventArgs e)
@@ -342,104 +305,13 @@ namespace EtiquetasApp.Forms
                 return;
             }
 
-            try
-            {
-                // Abrir formulario de impresión según el tipo de etiqueta
-                AbrirFormularioImpresion(solicitudSeleccionada);
-            }
-            catch (Exception ex)
-            {
-                MostrarError($"Error abriendo formulario de impresión: {ex.Message}");
-            }
-        }
-
-        private void AbrirFormularioImpresion(SolicitudEtiqueta solicitud)
-        {
-            Form formularioImpresion = null;
-
-            switch (solicitud.TipoEtiqueta?.ToUpper())
-            {
-                case "CBCOE":
-                case "C/BCO-E":
-                    formularioImpresion = new EtiquetasCBCOEForm();
-                    break;
-                case "DUAL":
-                    formularioImpresion = new EtiquetasDualForm();
-                    break;
-                case "EAN13":
-                    formularioImpresion = new EtiquetasEAN13Form();
-                    break;
-                default:
-                    formularioImpresion = new EtiquetasCBCOEForm(); // Por defecto
-                    break;
-            }
-
-            if (formularioImpresion != null)
-            {
-                formularioImpresion.MdiParent = this.MdiParent;
-                formularioImpresion.WindowState = FormWindowState.Maximized;
-                formularioImpresion.Show();
-            }
-        }
-
-        private void BtnEliminar_Click(object sender, EventArgs e)
-        {
-            var solicitudSeleccionada = ObtenerSolicitudSeleccionada();
-            if (solicitudSeleccionada == null)
-            {
-                MostrarError("Debe seleccionar una solicitud para eliminar");
-                return;
-            }
-
-            if (MessageBox.Show($"¿Está seguro que desea eliminar la solicitud {solicitudSeleccionada.IdSolicitud}?",
-                               "Confirmar Eliminación", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
-            {
-                try
-                {
-                    solicitudSeleccionada.DesactivarSolicitud();
-                    // Aquí iría la actualización en base de datos
-                    // DatabaseService.UpdateSolicitudEtiqueta(solicitudSeleccionada);
-
-                    CargarDatos();
-                    MostrarMensaje("Solicitud eliminada correctamente", false);
-                }
-                catch (Exception ex)
-                {
-                    MostrarError($"Error eliminando solicitud: {ex.Message}");
-                }
-            }
-        }
-
-        private void BtnReactivar_Click(object sender, EventArgs e)
-        {
-            var solicitudSeleccionada = ObtenerSolicitudSeleccionada();
-            if (solicitudSeleccionada == null)
-            {
-                MostrarError("Debe seleccionar una solicitud para reactivar");
-                return;
-            }
-
-            try
-            {
-                solicitudSeleccionada.ReactivarSolicitud();
-                // Aquí iría la actualización en base de datos
-                // DatabaseService.UpdateSolicitudEtiqueta(solicitudSeleccionada);
-
-                CargarDatos();
-                MostrarMensaje("Solicitud reactivada correctamente", false);
-            }
-            catch (Exception ex)
-            {
-                MostrarError($"Error reactivando solicitud: {ex.Message}");
-            }
+            MostrarMensaje("Funcionalidad de impresión pendiente de implementación", true);
         }
 
         private void SolicitudesGrid_SelectionChanged(object sender, EventArgs e)
         {
             var solicitud = ObtenerSolicitudSeleccionada();
             btnImprimir.Enabled = solicitud != null;
-            btnEliminar.Enabled = solicitud != null && solicitud.Activo;
-            btnReactivar.Enabled = solicitud != null && !solicitud.Activo;
         }
 
         private void SolicitudesGrid_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
@@ -452,19 +324,20 @@ namespace EtiquetasApp.Forms
 
         private void SolicitudesGrid_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
         {
-            // Formatear celdas específicas
             if (e.ColumnIndex == 8 && e.Value != null) // Columna Estado
             {
                 var estado = e.Value.ToString();
                 switch (estado)
                 {
                     case "Completada":
+                    case "Fabricada":
                         e.CellStyle.ForeColor = Color.DarkGreen;
                         break;
                     case "Vencida":
                         e.CellStyle.ForeColor = Color.Red;
                         break;
                     case "En Proceso":
+                    case "Parcial":
                         e.CellStyle.ForeColor = Color.DarkBlue;
                         break;
                 }

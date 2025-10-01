@@ -3,17 +3,69 @@ using System.ComponentModel.DataAnnotations;
 
 namespace EtiquetasApp.Models
 {
-    // Extensión del modelo existente MaestroCodigoEtiqueta
-    public partial class MaestroCodigoEtiqueta
+    // Clase principal con todas las propiedades necesarias
+    public class MaestroCodigoEtiqueta
     {
-        // Propiedad faltante
-        public bool Activo { get; set; } // Se agregó esta propiedad
+        // Propiedades base (las que estaban faltando)
+        [Key]
+        [Required(ErrorMessage = "El Part ID es requerido")]
+        [StringLength(50, ErrorMessage = "El Part ID no puede exceder 50 caracteres")]
+        public string PartId { get; set; }
 
-        public DateTime FechaModificacion { get; set; } // Se agregó esta propiedad
+        [StringLength(50, ErrorMessage = "UPC1 no puede exceder 50 caracteres")]
+        public string UPC1 { get; set; }
 
-        public string UsuarioModificacion { get; set; } // Se agregó esta propiedad
+        [StringLength(50, ErrorMessage = "UPC2 no puede exceder 50 caracteres")]
+        public string UPC2 { get; set; }
 
-        public string Observaciones { get; set; } // Se agregó esta propiedad
+        [StringLength(200, ErrorMessage = "La descripción no puede exceder 200 caracteres")]
+        public string Descripcion { get; set; }
+
+        [StringLength(20, ErrorMessage = "El tipo de etiqueta no puede exceder 20 caracteres")]
+        public string TipoEtiqueta { get; set; }
+
+        [StringLength(20, ErrorMessage = "El color no puede exceder 20 caracteres")]
+        public string ColorEtiqueta { get; set; } = "Blancas";
+
+        public bool RequiereLogo { get; set; } = false;
+
+        [StringLength(50, ErrorMessage = "El nombre del logo no puede exceder 50 caracteres")]
+        public string NombreLogo { get; set; }
+
+        [StringLength(50, ErrorMessage = "El usuario no puede exceder 50 caracteres")]
+        public string UsuarioCreacion { get; set; }
+
+        public DateTime FechaCreacion { get; set; } = DateTime.Now;
+
+        // Propiedades adicionales
+        public bool Activo { get; set; } = true;
+
+        public DateTime? FechaModificacion { get; set; }
+
+        [StringLength(50, ErrorMessage = "El usuario no puede exceder 50 caracteres")]
+        public string UsuarioModificacion { get; set; }
+
+        [StringLength(500, ErrorMessage = "Las observaciones no pueden exceder 500 caracteres")]
+        public string Observaciones { get; set; }
+
+        // Renombrado para evitar conflicto con el enum
+        [Range(1, 10, ErrorMessage = "La velocidad debe estar entre 1 y 10")]
+        public int VelocidadImpresionConfig { get; set; } = 4;
+
+        // Propiedad de temperatura como int
+        [Range(1, 30, ErrorMessage = "La temperatura debe estar entre 1 y 30")]
+        public int TemperaturaImpresion { get; set; } = 6;
+
+        // Propiedad calculada
+        public string EstadoDescripcion
+        {
+            get
+            {
+                if (!Activo) return "Inactivo";
+                if (ValidarConfiguracion()) return "Válido";
+                return "Requiere Corrección";
+            }
+        }
 
         // Métodos de activación/desactivación
         public void Activar(string usuario = "")
@@ -34,15 +86,10 @@ namespace EtiquetasApp.Models
                 Observaciones = $"{Observaciones}\n[{DateTime.Now:dd/MM/yyyy}] Desactivado: {razon}".Trim();
         }
 
-        // Validaciones adicionales
-        public override bool ValidarConfiguracion()
+        public bool ValidarConfiguracion()
         {
-            // Validaciones base del modelo padre
-            if (!base.ValidarConfiguracion())
-                return false;
-
             // Validaciones específicas para impresión
-            if (VelocidadImpresion < 1 || VelocidadImpresion > 10)
+            if (VelocidadImpresionConfig < 1 || VelocidadImpresionConfig > 10)
                 return false;
 
             if (TemperaturaImpresion < 1 || TemperaturaImpresion > 30)
@@ -124,7 +171,7 @@ namespace EtiquetasApp.Models
                 return false;
 
             // Velocidad recomendada para C/BCO-E
-            if (VelocidadImpresion > 6)
+            if (VelocidadImpresionConfig > 6)
                 return false;
 
             return true;
@@ -155,7 +202,7 @@ namespace EtiquetasApp.Models
             }
         }
 
-        public string ConfiguracionImpresion => $"Vel: {VelocidadImpresion}, Temp: {TemperaturaImpresion}°C";
+        public string ConfiguracionImpresion => $"Vel: {VelocidadImpresionConfig}, Temp: {TemperaturaImpresion}°C";
 
         public int EtiquetasPorHoja
         {
@@ -222,7 +269,7 @@ namespace EtiquetasApp.Models
                 Descripcion = this.Descripcion,
                 TipoEtiqueta = this.TipoEtiqueta,
                 ColorEtiqueta = this.ColorEtiqueta,
-                VelocidadImpresion = this.VelocidadImpresion,
+                VelocidadImpresionConfig = this.VelocidadImpresionConfig,
                 TemperaturaImpresion = this.TemperaturaImpresion,
                 RequiereLogo = this.RequiereLogo,
                 NombreLogo = this.NombreLogo,
@@ -245,11 +292,9 @@ namespace EtiquetasApp.Models
                 TipoEtiqueta = this.TipoEtiqueta,
                 Color = this.ColorEtiqueta,
                 Cantidad = cantidad,
-                Velocidad = this.VelocidadImpresion,
+                Velocidad = this.VelocidadImpresionConfig,
                 Temperatura = this.TemperaturaImpresion,
-                Logo = this.RequiereLogo ? this.NombreLogo : null,
-                Factor = "", // Se puede agregar si es necesario
-                FechaImpresion = DateTime.Now
+                Logo = this.RequiereLogo ? this.NombreLogo : null
             };
         }
 
@@ -261,7 +306,7 @@ namespace EtiquetasApp.Models
             if (temperatura < 1 || temperatura > 30)
                 throw new ArgumentException("La temperatura debe estar entre 1 y 30");
 
-            VelocidadImpresion = velocidad;
+            VelocidadImpresionConfig = velocidad;
             TemperaturaImpresion = temperatura;
             FechaModificacion = DateTime.Now;
             if (!string.IsNullOrEmpty(usuario))
@@ -295,41 +340,6 @@ namespace EtiquetasApp.Models
         public override string ToString()
         {
             return $"{PartId} - {TipoEtiquetaDescripcion} ({EstadoDescripcion})";
-        }
-    }
-
-    // Clase para datos de etiqueta en impresión
-    public class EtiquetaData
-    {
-        public string PartId { get; set; }
-        public string UPC { get; set; }
-        public string UPC2 { get; set; }
-        public string Descripcion { get; set; }
-        public string TipoEtiqueta { get; set; }
-        public string Color { get; set; }
-        public int Cantidad { get; set; }
-        public int Velocidad { get; set; }
-        public int Temperatura { get; set; }
-        public string Logo { get; set; }
-        public string Factor { get; set; }
-        public DateTime FechaImpresion { get; set; } = DateTime.Now;
-
-        // Posiciones para impresión (se cargan desde configuración)
-        public int Posicion1 { get; set; }
-        public int Posicion2 { get; set; }
-        public int Posicion3 { get; set; }
-        public int Posicion4 { get; set; }
-        public int Posicion5 { get; set; }
-
-        public bool ValidarDatos()
-        {
-            return !string.IsNullOrEmpty(PartId) &&
-                   !string.IsNullOrEmpty(UPC) &&
-                   !string.IsNullOrEmpty(Descripcion) &&
-                   !string.IsNullOrEmpty(TipoEtiqueta) &&
-                   Cantidad > 0 &&
-                   Velocidad >= 1 && Velocidad <= 10 &&
-                   Temperatura >= 1 && Temperatura <= 30;
         }
     }
 }

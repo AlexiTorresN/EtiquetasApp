@@ -5,6 +5,7 @@ using System.Linq;
 using System.Windows.Forms;
 using EtiquetasApp.Models;
 using EtiquetasApp.Services;
+using static EtiquetasApp.Models.EnumExtensions;
 
 namespace EtiquetasApp.Forms
 {
@@ -28,40 +29,37 @@ namespace EtiquetasApp.Forms
             CargarImpresoras();
             CargarSolicitudes();
             ConfigurarEventos();
+            InitializeColorButtons();
         }
 
         protected virtual void ConfigurarEventos()
         {
-            // Eventos para controles de posiciones
             pos1TextBox.TextChanged += PosicionTextBox_TextChanged;
             pos2TextBox.TextChanged += PosicionTextBox_TextChanged;
             pos3TextBox.TextChanged += PosicionTextBox_TextChanged;
             pos4TextBox.TextChanged += PosicionTextBox_TextChanged;
             pos5TextBox.TextChanged += PosicionTextBox_TextChanged;
 
-            // Eventos para botones de ajuste de posiciones
             btnAjustarIzq.Click += BtnAjustarIzq_Click;
             btnAjustarDer.Click += BtnAjustarDer_Click;
 
-            // Eventos de grilla
             solicitudesGrid.SelectionChanged += SolicitudesGrid_SelectionChanged;
             solicitudesGrid.CellDoubleClick += SolicitudesGrid_CellDoubleClick;
 
-            // Eventos de impresión
             btnImprimir.Click += BtnImprimir_Click;
             btnPrueba.Click += BtnPrueba_Click;
+            btnRefrescar.Click += (s, e) => RefrescarDatos();
         }
 
         protected virtual void CargarImpresoras()
         {
             try
             {
-                impresoras = PrinterService.GetInstalledPrinters();
+                impresoras = PrinterService.GetAvailablePrinters();
                 papelComboBox.Items.Clear();
                 papelComboBox.Items.AddRange(new[] { "EMPACK", "SOLUCORP", "Térmico", "Sintético" });
                 papelComboBox.SelectedIndex = 0;
 
-                // Cargar impresora por defecto
                 var defaultPrinter = ConfigurationService.DefaultPrinter;
                 if (!string.IsNullOrEmpty(defaultPrinter) && impresoras.Contains(defaultPrinter))
                 {
@@ -111,10 +109,9 @@ namespace EtiquetasApp.Forms
                     row.Cells[5].Value = solicitud.Observaciones;
                     row.Cells[6].Value = solicitud.FechaRequerida.ToString("dd/MM/yyyy");
 
-                    // Colorear filas según urgencia
                     if (solicitud.EsUrgente)
                         row.DefaultCellStyle.BackColor = Color.LightCoral;
-                    else if (solicitud.DiasParaVencimiento <= 3)
+                    else if (solicitud.DiasVencimiento <= 3)
                         row.DefaultCellStyle.BackColor = Color.LightYellow;
 
                     row.Tag = solicitud;
@@ -155,13 +152,12 @@ namespace EtiquetasApp.Forms
             try
             {
                 lblIdSolicitud.Text = solicitud.IdSolicitud.ToString();
-                lblOrdenFab.Text = solicitud.OrdenFab;
+                lblOrdenFab.Text = solicitud.OrdenFab.ToString();
                 lblDescripcion.Text = solicitud.Descripcion;
                 lblCantidad.Text = solicitud.CantidadPendiente.ToString();
                 lblUPC.Text = solicitud.UPC1 ?? "";
                 lblUPC2.Text = solicitud.UPC2 ?? "";
 
-                // Cargar configuración específica del tipo
                 CargarConfiguracionTipo();
             }
             catch (Exception ex)
@@ -172,11 +168,9 @@ namespace EtiquetasApp.Forms
 
         protected virtual void CargarConfiguracionTipo()
         {
-            // Cargar velocidad y temperatura por defecto
-            velocidadComboBox.SelectedItem = ConfigurationService.DefaultVelocidad;
-            temperaturaComboBox.SelectedItem = ConfigurationService.DefaultTemperatura;
+            velocidadComboBox.SelectedItem = ConfigurationService.DefaultVelocidad.ToString();
+            temperaturaComboBox.SelectedItem = ConfigurationService.DefaultTemperatura.ToString();
 
-            // Cargar posiciones específicas del tipo
             CargarPosiciones();
         }
 
@@ -216,7 +210,6 @@ namespace EtiquetasApp.Forms
 
         protected virtual void PosicionTextBox_TextChanged(object sender, EventArgs e)
         {
-            // Validar que solo contenga números
             var textBox = sender as TextBox;
             if (textBox != null)
             {
@@ -303,7 +296,7 @@ namespace EtiquetasApp.Forms
 
                 if (!string.IsNullOrEmpty(impresoraSeleccionada))
                 {
-                    if (PrinterService.TestPrinter(impresoraSeleccionada))
+                    if (PrinterService.PrintTest(impresoraSeleccionada))
                     {
                         MostrarMensaje("Prueba de impresión enviada correctamente", false);
                     }
@@ -349,19 +342,17 @@ namespace EtiquetasApp.Forms
         {
             try
             {
-                MostrarMensaje("Coloque las etiquetas y presione Aceptar", true);
+                if (MessageBox.Show("Coloque las etiquetas y presione Aceptar", "Confirmar",
+                    MessageBoxButtons.OKCancel, MessageBoxIcon.Information) == DialogResult.Cancel)
+                    return;
 
                 var etiquetaData = CrearEtiquetaData(solicitud);
                 var zplCode = GenerarCodigoZPL(etiquetaData);
 
                 if (PrinterService.SendZPLToPrinter(impresoraSeleccionada, zplCode))
                 {
-                    // Actualizar cantidad fabricada
                     DatabaseService.UpdateSolicitudEtiquetaFabricada(solicitud.IdSolicitud, solicitud.CantidadPedida);
-
-                    // Recargar datos
                     CargarSolicitudes();
-
                     MostrarMensaje("Etiquetas impresas correctamente", false);
                 }
                 else
@@ -383,14 +374,13 @@ namespace EtiquetasApp.Forms
                 UPC = solicitud.UPC1,
                 UPC2 = solicitud.UPC2,
                 Descripcion = solicitud.Descripcion,
-                OrdenFab = solicitud.OrdenFab,
+                OrdenFab = solicitud.OrdenFab.ToString(),
                 Cantidad = solicitud.CantidadPendiente,
-                Velocidad = (int)velocidadComboBox.SelectedItem,
-                Temperatura = (int)temperaturaComboBox.SelectedItem,
+                Velocidad = int.Parse(velocidadComboBox.SelectedItem?.ToString() ?? "4"),
+                Temperatura = int.Parse(temperaturaComboBox.SelectedItem?.ToString() ?? "6"),
                 Color = solicitud.Color
             };
 
-            // Cargar posiciones
             etiquetaData.Posiciones["Posicion1"] = pos1TextBox.Text;
             etiquetaData.Posiciones["Posicion2"] = pos2TextBox.Text;
             etiquetaData.Posiciones["Posicion3"] = pos3TextBox.Text;
@@ -402,7 +392,6 @@ namespace EtiquetasApp.Forms
 
         protected virtual string GenerarCodigoZPL(EtiquetaData etiquetaData)
         {
-            // Método base - debe ser sobrescrito en clases derivadas
             return ZPLService.GenerateEtiquetaCBCOE(etiquetaData);
         }
 
