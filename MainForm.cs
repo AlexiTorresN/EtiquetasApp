@@ -1,7 +1,8 @@
-﻿using System;
-using System.Windows.Forms;
-using EtiquetasApp.Forms;
+﻿using EtiquetasApp.Forms;
 using EtiquetasApp.Services;
+using EtiquetasApp.Setup;
+using System;
+using System.Windows.Forms;
 
 namespace EtiquetasApp
 {
@@ -9,6 +10,15 @@ namespace EtiquetasApp
     {
         public MainForm()
         {
+            try
+            {
+                InitialSetup.Initialize();
+                Console.WriteLine("Configuración inicial completada");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error en configuración inicial: {ex.Message}");
+            }
             InitializeComponent();
             InitializeCustomComponents();
         }

@@ -87,533 +87,622 @@ namespace EtiquetasApp.Forms
         /// </summary>
         private void InitializeComponent()
         {
-            this.components = new System.ComponentModel.Container();
             DataGridViewCellStyle dataGridViewCellStyle1 = new DataGridViewCellStyle();
             DataGridViewCellStyle dataGridViewCellStyle2 = new DataGridViewCellStyle();
-
-            this.solicitudesGrid = new DataGridView();
-            this.statusStrip = new StatusStrip();
-            this.statusLabel = new ToolStripStatusLabel();
-            this.etiquetaGroupBox = new GroupBox();
-            this.lblTipoEtiqueta = new Label();
-            this.papelComboBox = new ComboBox();
-            this.lblPapel = new Label();
-            this.velocidadComboBox = new ComboBox();
-            this.lblVelocidad = new Label();
-            this.temperaturaComboBox = new ComboBox();
-            this.lblTemperatura = new Label();
-            this.etiquetaDobleCheckBox = new CheckBox();
-            this.posicionesGroupBox = new GroupBox();
-            this.pos1TextBox = new TextBox();
-            this.pos2TextBox = new TextBox();
-            this.pos3TextBox = new TextBox();
-            this.pos4TextBox = new TextBox();
-            this.pos5TextBox = new TextBox();
-            this.lbl1 = new Label();
-            this.lbl2 = new Label();
-            this.lbl3 = new Label();
-            this.lbl4 = new Label();
-            this.lbl5 = new Label();
-            this.btnAjustarIzq = new Button();
-            this.btnAjustarDer = new Button();
-            this.infoGroupBox = new GroupBox();
-            this.lblIdSolicitudTxt = new Label();
-            this.lblIdSolicitud = new Label();
-            this.lblOrdenFabTxt = new Label();
-            this.lblOrdenFab = new Label();
-            this.lblDescripcionTxt = new Label();
-            this.lblDescripcion = new Label();
-            this.lblCantidadTxt = new Label();
-            this.lblCantidad = new Label();
-            this.lblUPCTxt = new Label();
-            this.lblUPC = new Label();
-            this.lblUPC2Txt = new Label();
-            this.lblUPC2 = new Label();
-            this.btnImprimir = new Button();
-            this.btnPrueba = new Button();
-            this.btnRefrescar = new Button();
-            this.coloresPanel = new Panel();
-
-            ((System.ComponentModel.ISupportInitialize)(this.solicitudesGrid)).BeginInit();
-            this.statusStrip.SuspendLayout();
-            this.etiquetaGroupBox.SuspendLayout();
-            this.posicionesGroupBox.SuspendLayout();
-            this.infoGroupBox.SuspendLayout();
-            this.SuspendLayout();
-
+            solicitudesGrid = new DataGridView();
+            statusStrip = new StatusStrip();
+            statusLabel = new ToolStripStatusLabel();
+            etiquetaGroupBox = new GroupBox();
+            lblTipoEtiqueta = new Label();
+            papelComboBox = new ComboBox();
+            lblPapel = new Label();
+            velocidadComboBox = new ComboBox();
+            lblVelocidad = new Label();
+            temperaturaComboBox = new ComboBox();
+            lblTemperatura = new Label();
+            etiquetaDobleCheckBox = new CheckBox();
+            posicionesGroupBox = new GroupBox();
+            pos1TextBox = new TextBox();
+            pos2TextBox = new TextBox();
+            pos3TextBox = new TextBox();
+            pos4TextBox = new TextBox();
+            pos5TextBox = new TextBox();
+            lbl1 = new Label();
+            lbl2 = new Label();
+            lbl3 = new Label();
+            lbl4 = new Label();
+            lbl5 = new Label();
+            btnAjustarIzq = new Button();
+            btnAjustarDer = new Button();
+            infoGroupBox = new GroupBox();
+            lblIdSolicitudTxt = new Label();
+            lblIdSolicitud = new Label();
+            lblOrdenFabTxt = new Label();
+            lblOrdenFab = new Label();
+            lblDescripcionTxt = new Label();
+            lblDescripcion = new Label();
+            lblCantidadTxt = new Label();
+            lblCantidad = new Label();
+            lblUPCTxt = new Label();
+            lblUPC = new Label();
+            lblUPC2Txt = new Label();
+            lblUPC2 = new Label();
+            btnImprimir = new Button();
+            btnPrueba = new Button();
+            btnRefrescar = new Button();
+            coloresPanel = new Panel();
+            dataGridViewTextBoxColumn1 = new DataGridViewTextBoxColumn();
+            dataGridViewTextBoxColumn2 = new DataGridViewTextBoxColumn();
+            dataGridViewTextBoxColumn3 = new DataGridViewTextBoxColumn();
+            dataGridViewTextBoxColumn4 = new DataGridViewTextBoxColumn();
+            dataGridViewTextBoxColumn5 = new DataGridViewTextBoxColumn();
+            dataGridViewTextBoxColumn6 = new DataGridViewTextBoxColumn();
+            dataGridViewTextBoxColumn7 = new DataGridViewTextBoxColumn();
+            ((System.ComponentModel.ISupportInitialize)solicitudesGrid).BeginInit();
+            statusStrip.SuspendLayout();
+            etiquetaGroupBox.SuspendLayout();
+            posicionesGroupBox.SuspendLayout();
+            infoGroupBox.SuspendLayout();
+            SuspendLayout();
             // 
             // solicitudesGrid
             // 
-            this.solicitudesGrid.AllowUserToAddRows = false;
-            this.solicitudesGrid.AllowUserToDeleteRows = false;
-            this.solicitudesGrid.Anchor = ((AnchorStyles)((((AnchorStyles.Top | AnchorStyles.Bottom)
-            | AnchorStyles.Left)
-            | AnchorStyles.Right)));
-            this.solicitudesGrid.BackgroundColor = SystemColors.Window;
+            solicitudesGrid.AllowUserToAddRows = false;
+            solicitudesGrid.AllowUserToDeleteRows = false;
+            solicitudesGrid.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            solicitudesGrid.BackgroundColor = SystemColors.Window;
             dataGridViewCellStyle1.Alignment = DataGridViewContentAlignment.MiddleLeft;
             dataGridViewCellStyle1.BackColor = SystemColors.Control;
-            dataGridViewCellStyle1.Font = new Font("Microsoft Sans Serif", 8.25F, FontStyle.Regular, GraphicsUnit.Point);
+            dataGridViewCellStyle1.Font = new Font("Microsoft Sans Serif", 8.25F);
             dataGridViewCellStyle1.ForeColor = SystemColors.WindowText;
             dataGridViewCellStyle1.SelectionBackColor = SystemColors.Highlight;
             dataGridViewCellStyle1.SelectionForeColor = SystemColors.HighlightText;
             dataGridViewCellStyle1.WrapMode = DataGridViewTriState.True;
-            this.solicitudesGrid.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
-            this.solicitudesGrid.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.solicitudesGrid.Columns.Add("ColIdSolicitud", "N° Sol.");
-            this.solicitudesGrid.Columns.Add("ColOrdenFab", "Orden Fab.");
-            this.solicitudesGrid.Columns.Add("ColDescripcion", "Descripción");
-            this.solicitudesGrid.Columns.Add("ColCantidad", "Cantidad");
-            this.solicitudesGrid.Columns.Add("ColColor", "Color");
-            this.solicitudesGrid.Columns.Add("ColObservaciones", "Observaciones");
-            this.solicitudesGrid.Columns.Add("ColFecha", "Fecha Req.");
-            this.solicitudesGrid.Columns[0].Width = 80;
-            this.solicitudesGrid.Columns[1].Width = 120;
-            this.solicitudesGrid.Columns[2].Width = 200;
-            this.solicitudesGrid.Columns[3].Width = 80;
-            this.solicitudesGrid.Columns[4].Width = 80;
-            this.solicitudesGrid.Columns[5].Width = 150;
-            this.solicitudesGrid.Columns[6].Width = 100;
+            solicitudesGrid.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
+            solicitudesGrid.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            solicitudesGrid.Columns.AddRange(new DataGridViewColumn[] { dataGridViewTextBoxColumn1, dataGridViewTextBoxColumn2, dataGridViewTextBoxColumn3, dataGridViewTextBoxColumn4, dataGridViewTextBoxColumn5, dataGridViewTextBoxColumn6, dataGridViewTextBoxColumn7 });
             dataGridViewCellStyle2.Alignment = DataGridViewContentAlignment.MiddleLeft;
             dataGridViewCellStyle2.BackColor = SystemColors.Window;
-            dataGridViewCellStyle2.Font = new Font("Microsoft Sans Serif", 8.25F, FontStyle.Regular, GraphicsUnit.Point);
+            dataGridViewCellStyle2.Font = new Font("Microsoft Sans Serif", 8.25F);
             dataGridViewCellStyle2.ForeColor = SystemColors.ControlText;
             dataGridViewCellStyle2.SelectionBackColor = SystemColors.Highlight;
             dataGridViewCellStyle2.SelectionForeColor = SystemColors.HighlightText;
             dataGridViewCellStyle2.WrapMode = DataGridViewTriState.False;
-            this.solicitudesGrid.DefaultCellStyle = dataGridViewCellStyle2;
-            this.solicitudesGrid.Location = new Point(12, 12);
-            this.solicitudesGrid.MultiSelect = false;
-            this.solicitudesGrid.Name = "solicitudesGrid";
-            this.solicitudesGrid.ReadOnly = true;
-            this.solicitudesGrid.RowHeadersVisible = false;
-            this.solicitudesGrid.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
-            this.solicitudesGrid.Size = new Size(810, 300);
-            this.solicitudesGrid.TabIndex = 0;
-
+            solicitudesGrid.DefaultCellStyle = dataGridViewCellStyle2;
+            solicitudesGrid.Location = new Point(14, 14);
+            solicitudesGrid.Margin = new Padding(4, 3, 4, 3);
+            solicitudesGrid.MultiSelect = false;
+            solicitudesGrid.Name = "solicitudesGrid";
+            solicitudesGrid.ReadOnly = true;
+            solicitudesGrid.RowHeadersVisible = false;
+            solicitudesGrid.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+            solicitudesGrid.Size = new Size(945, 346);
+            solicitudesGrid.TabIndex = 0;
             // 
             // statusStrip
             // 
-            this.statusStrip.Items.AddRange(new ToolStripItem[] {
-            this.statusLabel});
-            this.statusStrip.Location = new Point(0, 639);
-            this.statusStrip.Name = "statusStrip";
-            this.statusStrip.Size = new Size(1084, 22);
-            this.statusStrip.TabIndex = 1;
-            this.statusStrip.Text = "statusStrip1";
-
+            statusStrip.Items.AddRange(new ToolStripItem[] { statusLabel });
+            statusStrip.Location = new Point(0, 741);
+            statusStrip.Name = "statusStrip";
+            statusStrip.Padding = new Padding(1, 0, 16, 0);
+            statusStrip.Size = new Size(1265, 22);
+            statusStrip.TabIndex = 1;
+            statusStrip.Text = "statusStrip1";
             // 
             // statusLabel
             // 
-            this.statusLabel.Name = "statusLabel";
-            this.statusLabel.Size = new Size(35, 17);
-            this.statusLabel.Text = "Listo";
-
+            statusLabel.Name = "statusLabel";
+            statusLabel.Size = new Size(32, 17);
+            statusLabel.Text = "Listo";
             // 
             // etiquetaGroupBox
             // 
-            this.etiquetaGroupBox.Controls.Add(this.lblTipoEtiqueta);
-            this.etiquetaGroupBox.Controls.Add(this.papelComboBox);
-            this.etiquetaGroupBox.Controls.Add(this.lblPapel);
-            this.etiquetaGroupBox.Controls.Add(this.velocidadComboBox);
-            this.etiquetaGroupBox.Controls.Add(this.lblVelocidad);
-            this.etiquetaGroupBox.Controls.Add(this.temperaturaComboBox);
-            this.etiquetaGroupBox.Controls.Add(this.lblTemperatura);
-            this.etiquetaGroupBox.Controls.Add(this.etiquetaDobleCheckBox);
-            this.etiquetaGroupBox.Location = new Point(12, 330);
-            this.etiquetaGroupBox.Name = "etiquetaGroupBox";
-            this.etiquetaGroupBox.Size = new Size(300, 120);
-            this.etiquetaGroupBox.TabIndex = 2;
-            this.etiquetaGroupBox.TabStop = false;
-            this.etiquetaGroupBox.Text = "Configuración de Etiquetas";
-
+            etiquetaGroupBox.Controls.Add(lblTipoEtiqueta);
+            etiquetaGroupBox.Controls.Add(papelComboBox);
+            etiquetaGroupBox.Controls.Add(lblPapel);
+            etiquetaGroupBox.Controls.Add(velocidadComboBox);
+            etiquetaGroupBox.Controls.Add(lblVelocidad);
+            etiquetaGroupBox.Controls.Add(temperaturaComboBox);
+            etiquetaGroupBox.Controls.Add(lblTemperatura);
+            etiquetaGroupBox.Controls.Add(etiquetaDobleCheckBox);
+            etiquetaGroupBox.Location = new Point(14, 381);
+            etiquetaGroupBox.Margin = new Padding(4, 3, 4, 3);
+            etiquetaGroupBox.Name = "etiquetaGroupBox";
+            etiquetaGroupBox.Padding = new Padding(4, 3, 4, 3);
+            etiquetaGroupBox.Size = new Size(350, 138);
+            etiquetaGroupBox.TabIndex = 2;
+            etiquetaGroupBox.TabStop = false;
+            etiquetaGroupBox.Text = "Configuración de Etiquetas";
             // 
             // lblTipoEtiqueta
             // 
-            this.lblTipoEtiqueta.AutoSize = true;
-            this.lblTipoEtiqueta.Font = new Font("Microsoft Sans Serif", 9F, FontStyle.Bold, GraphicsUnit.Point);
-            this.lblTipoEtiqueta.Location = new Point(15, 20);
-            this.lblTipoEtiqueta.Name = "lblTipoEtiqueta";
-            this.lblTipoEtiqueta.Size = new Size(120, 15);
-            this.lblTipoEtiqueta.TabIndex = 0;
-            this.lblTipoEtiqueta.Text = "Etiquetas C/BCO-E";
-
+            lblTipoEtiqueta.AutoSize = true;
+            lblTipoEtiqueta.Font = new Font("Microsoft Sans Serif", 9F, FontStyle.Bold);
+            lblTipoEtiqueta.Location = new Point(18, 23);
+            lblTipoEtiqueta.Margin = new Padding(4, 0, 4, 0);
+            lblTipoEtiqueta.Name = "lblTipoEtiqueta";
+            lblTipoEtiqueta.Size = new Size(126, 15);
+            lblTipoEtiqueta.TabIndex = 0;
+            lblTipoEtiqueta.Text = "Etiquetas C/BCO-E";
             // 
             // papelComboBox
             // 
-            this.papelComboBox.DropDownStyle = ComboBoxStyle.DropDownList;
-            this.papelComboBox.FormattingEnabled = true;
-            this.papelComboBox.Location = new Point(60, 45);
-            this.papelComboBox.Name = "papelComboBox";
-            this.papelComboBox.Size = new Size(100, 21);
-            this.papelComboBox.TabIndex = 2;
-
+            papelComboBox.DropDownStyle = ComboBoxStyle.DropDownList;
+            papelComboBox.FormattingEnabled = true;
+            papelComboBox.Location = new Point(70, 52);
+            papelComboBox.Margin = new Padding(4, 3, 4, 3);
+            papelComboBox.Name = "papelComboBox";
+            papelComboBox.Size = new Size(116, 23);
+            papelComboBox.TabIndex = 2;
             // 
             // lblPapel
             // 
-            this.lblPapel.AutoSize = true;
-            this.lblPapel.Location = new Point(15, 48);
-            this.lblPapel.Name = "lblPapel";
-            this.lblPapel.Size = new Size(34, 13);
-            this.lblPapel.TabIndex = 1;
-            this.lblPapel.Text = "Papel";
-
+            lblPapel.AutoSize = true;
+            lblPapel.Location = new Point(18, 55);
+            lblPapel.Margin = new Padding(4, 0, 4, 0);
+            lblPapel.Name = "lblPapel";
+            lblPapel.Size = new Size(36, 15);
+            lblPapel.TabIndex = 1;
+            lblPapel.Text = "Papel";
             // 
             // velocidadComboBox
             // 
-            this.velocidadComboBox.DropDownStyle = ComboBoxStyle.DropDownList;
-            this.velocidadComboBox.FormattingEnabled = true;
-            this.velocidadComboBox.Items.AddRange(new object[] { "1", "2", "3", "4", "5", "6", "7", "8" });
-            this.velocidadComboBox.Location = new Point(230, 45);
-            this.velocidadComboBox.Name = "velocidadComboBox";
-            this.velocidadComboBox.Size = new Size(50, 21);
-            this.velocidadComboBox.TabIndex = 4;
-            this.velocidadComboBox.SelectedIndex = 3; // Velocidad 4 por defecto
-
+            velocidadComboBox.DropDownStyle = ComboBoxStyle.DropDownList;
+            velocidadComboBox.FormattingEnabled = true;
+            velocidadComboBox.Items.AddRange(new object[] { "1", "2", "3", "4", "5", "6", "7", "8" });
+            velocidadComboBox.Location = new Point(268, 52);
+            velocidadComboBox.Margin = new Padding(4, 3, 4, 3);
+            velocidadComboBox.Name = "velocidadComboBox";
+            velocidadComboBox.Size = new Size(58, 23);
+            velocidadComboBox.TabIndex = 4;
             // 
             // lblVelocidad
             // 
-            this.lblVelocidad.AutoSize = true;
-            this.lblVelocidad.Location = new Point(175, 48);
-            this.lblVelocidad.Name = "lblVelocidad";
-            this.lblVelocidad.Size = new Size(54, 13);
-            this.lblVelocidad.TabIndex = 3;
-            this.lblVelocidad.Text = "Velocidad";
-
+            lblVelocidad.AutoSize = true;
+            lblVelocidad.Location = new Point(204, 55);
+            lblVelocidad.Margin = new Padding(4, 0, 4, 0);
+            lblVelocidad.Name = "lblVelocidad";
+            lblVelocidad.Size = new Size(58, 15);
+            lblVelocidad.TabIndex = 3;
+            lblVelocidad.Text = "Velocidad";
             // 
             // temperaturaComboBox
             // 
-            this.temperaturaComboBox.DropDownStyle = ComboBoxStyle.DropDownList;
-            this.temperaturaComboBox.FormattingEnabled = true;
-            this.temperaturaComboBox.Items.AddRange(new object[] { "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30" });
-            this.temperaturaComboBox.Location = new Point(230, 75);
-            this.temperaturaComboBox.Name = "temperaturaComboBox";
-            this.temperaturaComboBox.Size = new Size(50, 21);
-            this.temperaturaComboBox.TabIndex = 6;
-            this.temperaturaComboBox.SelectedIndex = 5; // Temperatura 6 por defecto
-
+            temperaturaComboBox.DropDownStyle = ComboBoxStyle.DropDownList;
+            temperaturaComboBox.FormattingEnabled = true;
+            temperaturaComboBox.Items.AddRange(new object[] { "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30" });
+            temperaturaComboBox.Location = new Point(268, 87);
+            temperaturaComboBox.Margin = new Padding(4, 3, 4, 3);
+            temperaturaComboBox.Name = "temperaturaComboBox";
+            temperaturaComboBox.Size = new Size(58, 23);
+            temperaturaComboBox.TabIndex = 6;
             // 
             // lblTemperatura
             // 
-            this.lblTemperatura.AutoSize = true;
-            this.lblTemperatura.Location = new Point(175, 78);
-            this.lblTemperatura.Name = "lblTemperatura";
-            this.lblTemperatura.Size = new Size(67, 13);
-            this.lblTemperatura.TabIndex = 5;
-            this.lblTemperatura.Text = "Temperatura";
-
+            lblTemperatura.AutoSize = true;
+            lblTemperatura.Location = new Point(204, 90);
+            lblTemperatura.Margin = new Padding(4, 0, 4, 0);
+            lblTemperatura.Name = "lblTemperatura";
+            lblTemperatura.Size = new Size(74, 15);
+            lblTemperatura.TabIndex = 5;
+            lblTemperatura.Text = "Temperatura";
             // 
             // etiquetaDobleCheckBox
             // 
-            this.etiquetaDobleCheckBox.AutoSize = true;
-            this.etiquetaDobleCheckBox.Location = new Point(15, 75);
-            this.etiquetaDobleCheckBox.Name = "etiquetaDobleCheckBox";
-            this.etiquetaDobleCheckBox.Size = new Size(98, 17);
-            this.etiquetaDobleCheckBox.TabIndex = 7;
-            this.etiquetaDobleCheckBox.Text = "Etiqueta Doble";
-            this.etiquetaDobleCheckBox.UseVisualStyleBackColor = true;
-
+            etiquetaDobleCheckBox.AutoSize = true;
+            etiquetaDobleCheckBox.Location = new Point(18, 87);
+            etiquetaDobleCheckBox.Margin = new Padding(4, 3, 4, 3);
+            etiquetaDobleCheckBox.Name = "etiquetaDobleCheckBox";
+            etiquetaDobleCheckBox.Size = new Size(103, 19);
+            etiquetaDobleCheckBox.TabIndex = 7;
+            etiquetaDobleCheckBox.Text = "Etiqueta Doble";
+            etiquetaDobleCheckBox.UseVisualStyleBackColor = true;
             // 
             // posicionesGroupBox
             // 
-            this.posicionesGroupBox.Controls.Add(this.pos1TextBox);
-            this.posicionesGroupBox.Controls.Add(this.pos2TextBox);
-            this.posicionesGroupBox.Controls.Add(this.pos3TextBox);
-            this.posicionesGroupBox.Controls.Add(this.pos4TextBox);
-            this.posicionesGroupBox.Controls.Add(this.pos5TextBox);
-            this.posicionesGroupBox.Controls.Add(this.lbl1);
-            this.posicionesGroupBox.Controls.Add(this.lbl2);
-            this.posicionesGroupBox.Controls.Add(this.lbl3);
-            this.posicionesGroupBox.Controls.Add(this.lbl4);
-            this.posicionesGroupBox.Controls.Add(this.lbl5);
-            this.posicionesGroupBox.Controls.Add(this.btnAjustarIzq);
-            this.posicionesGroupBox.Controls.Add(this.btnAjustarDer);
-            this.posicionesGroupBox.Location = new Point(330, 330);
-            this.posicionesGroupBox.Name = "posicionesGroupBox";
-            this.posicionesGroupBox.Size = new Size(320, 120);
-            this.posicionesGroupBox.TabIndex = 3;
-            this.posicionesGroupBox.TabStop = false;
-            this.posicionesGroupBox.Text = "Posición de columnas";
-
-            // Posiciones TextBox y Labels
-            this.lbl1.AutoSize = true;
-            this.lbl1.Location = new Point(15, 25);
-            this.lbl1.Name = "lbl1";
-            this.lbl1.Size = new Size(13, 13);
-            this.lbl1.TabIndex = 0;
-            this.lbl1.Text = "1";
-
-            this.pos1TextBox.Location = new Point(15, 45);
-            this.pos1TextBox.Name = "pos1TextBox";
-            this.pos1TextBox.Size = new Size(50, 20);
-            this.pos1TextBox.TabIndex = 1;
-            this.pos1TextBox.Text = "4";
-            this.pos1TextBox.TextAlign = HorizontalAlignment.Center;
-
-            this.lbl2.AutoSize = true;
-            this.lbl2.Location = new Point(75, 25);
-            this.lbl2.Name = "lbl2";
-            this.lbl2.Size = new Size(13, 13);
-            this.lbl2.TabIndex = 2;
-            this.lbl2.Text = "2";
-
-            this.pos2TextBox.Location = new Point(75, 45);
-            this.pos2TextBox.Name = "pos2TextBox";
-            this.pos2TextBox.Size = new Size(50, 20);
-            this.pos2TextBox.TabIndex = 3;
-            this.pos2TextBox.Text = "148";
-            this.pos2TextBox.TextAlign = HorizontalAlignment.Center;
-
-            this.lbl3.AutoSize = true;
-            this.lbl3.Location = new Point(135, 25);
-            this.lbl3.Name = "lbl3";
-            this.lbl3.Size = new Size(13, 13);
-            this.lbl3.TabIndex = 4;
-            this.lbl3.Text = "3";
-
-            this.pos3TextBox.Location = new Point(135, 45);
-            this.pos3TextBox.Name = "pos3TextBox";
-            this.pos3TextBox.Size = new Size(50, 20);
-            this.pos3TextBox.TabIndex = 5;
-            this.pos3TextBox.Text = "292";
-            this.pos3TextBox.TextAlign = HorizontalAlignment.Center;
-
-            this.lbl4.AutoSize = true;
-            this.lbl4.Location = new Point(195, 25);
-            this.lbl4.Name = "lbl4";
-            this.lbl4.Size = new Size(13, 13);
-            this.lbl4.TabIndex = 6;
-            this.lbl4.Text = "4";
-
-            this.pos4TextBox.Location = new Point(195, 45);
-            this.pos4TextBox.Name = "pos4TextBox";
-            this.pos4TextBox.Size = new Size(50, 20);
-            this.pos4TextBox.TabIndex = 7;
-            this.pos4TextBox.Text = "436";
-            this.pos4TextBox.TextAlign = HorizontalAlignment.Center;
-
-            this.lbl5.AutoSize = true;
-            this.lbl5.Location = new Point(255, 25);
-            this.lbl5.Name = "lbl5";
-            this.lbl5.Size = new Size(13, 13);
-            this.lbl5.TabIndex = 8;
-            this.lbl5.Text = "5";
-
-            this.pos5TextBox.Location = new Point(255, 45);
-            this.pos5TextBox.Name = "pos5TextBox";
-            this.pos5TextBox.Size = new Size(50, 20);
-            this.pos5TextBox.TabIndex = 9;
-            this.pos5TextBox.Text = "580";
-            this.pos5TextBox.TextAlign = HorizontalAlignment.Center;
-
+            posicionesGroupBox.Controls.Add(pos1TextBox);
+            posicionesGroupBox.Controls.Add(pos2TextBox);
+            posicionesGroupBox.Controls.Add(pos3TextBox);
+            posicionesGroupBox.Controls.Add(pos4TextBox);
+            posicionesGroupBox.Controls.Add(pos5TextBox);
+            posicionesGroupBox.Controls.Add(lbl1);
+            posicionesGroupBox.Controls.Add(lbl2);
+            posicionesGroupBox.Controls.Add(lbl3);
+            posicionesGroupBox.Controls.Add(lbl4);
+            posicionesGroupBox.Controls.Add(lbl5);
+            posicionesGroupBox.Controls.Add(btnAjustarIzq);
+            posicionesGroupBox.Controls.Add(btnAjustarDer);
+            posicionesGroupBox.Location = new Point(385, 381);
+            posicionesGroupBox.Margin = new Padding(4, 3, 4, 3);
+            posicionesGroupBox.Name = "posicionesGroupBox";
+            posicionesGroupBox.Padding = new Padding(4, 3, 4, 3);
+            posicionesGroupBox.Size = new Size(373, 138);
+            posicionesGroupBox.TabIndex = 3;
+            posicionesGroupBox.TabStop = false;
+            posicionesGroupBox.Text = "Posición de columnas";
+            // 
+            // pos1TextBox
+            // 
+            pos1TextBox.Location = new Point(18, 52);
+            pos1TextBox.Margin = new Padding(4, 3, 4, 3);
+            pos1TextBox.Name = "pos1TextBox";
+            pos1TextBox.Size = new Size(58, 23);
+            pos1TextBox.TabIndex = 1;
+            pos1TextBox.Text = "4";
+            pos1TextBox.TextAlign = HorizontalAlignment.Center;
+            // 
+            // pos2TextBox
+            // 
+            pos2TextBox.Location = new Point(88, 52);
+            pos2TextBox.Margin = new Padding(4, 3, 4, 3);
+            pos2TextBox.Name = "pos2TextBox";
+            pos2TextBox.Size = new Size(58, 23);
+            pos2TextBox.TabIndex = 3;
+            pos2TextBox.Text = "148";
+            pos2TextBox.TextAlign = HorizontalAlignment.Center;
+            // 
+            // pos3TextBox
+            // 
+            pos3TextBox.Location = new Point(158, 52);
+            pos3TextBox.Margin = new Padding(4, 3, 4, 3);
+            pos3TextBox.Name = "pos3TextBox";
+            pos3TextBox.Size = new Size(58, 23);
+            pos3TextBox.TabIndex = 5;
+            pos3TextBox.Text = "292";
+            pos3TextBox.TextAlign = HorizontalAlignment.Center;
+            // 
+            // pos4TextBox
+            // 
+            pos4TextBox.Location = new Point(227, 52);
+            pos4TextBox.Margin = new Padding(4, 3, 4, 3);
+            pos4TextBox.Name = "pos4TextBox";
+            pos4TextBox.Size = new Size(58, 23);
+            pos4TextBox.TabIndex = 7;
+            pos4TextBox.Text = "436";
+            pos4TextBox.TextAlign = HorizontalAlignment.Center;
+            // 
+            // pos5TextBox
+            // 
+            pos5TextBox.Location = new Point(298, 52);
+            pos5TextBox.Margin = new Padding(4, 3, 4, 3);
+            pos5TextBox.Name = "pos5TextBox";
+            pos5TextBox.Size = new Size(58, 23);
+            pos5TextBox.TabIndex = 9;
+            pos5TextBox.Text = "580";
+            pos5TextBox.TextAlign = HorizontalAlignment.Center;
+            // 
+            // lbl1
+            // 
+            lbl1.AutoSize = true;
+            lbl1.Location = new Point(18, 29);
+            lbl1.Margin = new Padding(4, 0, 4, 0);
+            lbl1.Name = "lbl1";
+            lbl1.Size = new Size(13, 15);
+            lbl1.TabIndex = 0;
+            lbl1.Text = "1";
+            // 
+            // lbl2
+            // 
+            lbl2.AutoSize = true;
+            lbl2.Location = new Point(88, 29);
+            lbl2.Margin = new Padding(4, 0, 4, 0);
+            lbl2.Name = "lbl2";
+            lbl2.Size = new Size(13, 15);
+            lbl2.TabIndex = 2;
+            lbl2.Text = "2";
+            // 
+            // lbl3
+            // 
+            lbl3.AutoSize = true;
+            lbl3.Location = new Point(158, 29);
+            lbl3.Margin = new Padding(4, 0, 4, 0);
+            lbl3.Name = "lbl3";
+            lbl3.Size = new Size(13, 15);
+            lbl3.TabIndex = 4;
+            lbl3.Text = "3";
+            // 
+            // lbl4
+            // 
+            lbl4.AutoSize = true;
+            lbl4.Location = new Point(227, 29);
+            lbl4.Margin = new Padding(4, 0, 4, 0);
+            lbl4.Name = "lbl4";
+            lbl4.Size = new Size(13, 15);
+            lbl4.TabIndex = 6;
+            lbl4.Text = "4";
+            // 
+            // lbl5
+            // 
+            lbl5.AutoSize = true;
+            lbl5.Location = new Point(298, 29);
+            lbl5.Margin = new Padding(4, 0, 4, 0);
+            lbl5.Name = "lbl5";
+            lbl5.Size = new Size(13, 15);
+            lbl5.TabIndex = 8;
+            lbl5.Text = "5";
             // 
             // btnAjustarIzq
             // 
-            this.btnAjustarIzq.Location = new Point(15, 85);
-            this.btnAjustarIzq.Name = "btnAjustarIzq";
-            this.btnAjustarIzq.Size = new Size(30, 23);
-            this.btnAjustarIzq.TabIndex = 10;
-            this.btnAjustarIzq.Text = "<<";
-            this.btnAjustarIzq.UseVisualStyleBackColor = true;
-
+            btnAjustarIzq.Location = new Point(18, 98);
+            btnAjustarIzq.Margin = new Padding(4, 3, 4, 3);
+            btnAjustarIzq.Name = "btnAjustarIzq";
+            btnAjustarIzq.Size = new Size(35, 27);
+            btnAjustarIzq.TabIndex = 10;
+            btnAjustarIzq.Text = "<<";
+            btnAjustarIzq.UseVisualStyleBackColor = true;
             // 
             // btnAjustarDer
             // 
-            this.btnAjustarDer.Location = new Point(55, 85);
-            this.btnAjustarDer.Name = "btnAjustarDer";
-            this.btnAjustarDer.Size = new Size(30, 23);
-            this.btnAjustarDer.TabIndex = 11;
-            this.btnAjustarDer.Text = ">>";
-            this.btnAjustarDer.UseVisualStyleBackColor = true;
-
+            btnAjustarDer.Location = new Point(64, 98);
+            btnAjustarDer.Margin = new Padding(4, 3, 4, 3);
+            btnAjustarDer.Name = "btnAjustarDer";
+            btnAjustarDer.Size = new Size(35, 27);
+            btnAjustarDer.TabIndex = 11;
+            btnAjustarDer.Text = ">>";
+            btnAjustarDer.UseVisualStyleBackColor = true;
             // 
             // infoGroupBox
             // 
-            this.infoGroupBox.Controls.Add(this.lblIdSolicitudTxt);
-            this.infoGroupBox.Controls.Add(this.lblIdSolicitud);
-            this.infoGroupBox.Controls.Add(this.lblOrdenFabTxt);
-            this.infoGroupBox.Controls.Add(this.lblOrdenFab);
-            this.infoGroupBox.Controls.Add(this.lblDescripcionTxt);
-            this.infoGroupBox.Controls.Add(this.lblDescripcion);
-            this.infoGroupBox.Controls.Add(this.lblCantidadTxt);
-            this.infoGroupBox.Controls.Add(this.lblCantidad);
-            this.infoGroupBox.Controls.Add(this.lblUPCTxt);
-            this.infoGroupBox.Controls.Add(this.lblUPC);
-            this.infoGroupBox.Controls.Add(this.lblUPC2Txt);
-            this.infoGroupBox.Controls.Add(this.lblUPC2);
-            this.infoGroupBox.Location = new Point(670, 330);
-            this.infoGroupBox.Name = "infoGroupBox";
-            this.infoGroupBox.Size = new Size(220, 180);
-            this.infoGroupBox.TabIndex = 4;
-            this.infoGroupBox.TabStop = false;
-            this.infoGroupBox.Text = "Información";
-
-            // Labels de información
-            this.lblIdSolicitudTxt.AutoSize = true;
-            this.lblIdSolicitudTxt.Location = new Point(15, 25);
-            this.lblIdSolicitudTxt.Name = "lblIdSolicitudTxt";
-            this.lblIdSolicitudTxt.Size = new Size(48, 13);
-            this.lblIdSolicitudTxt.TabIndex = 0;
-            this.lblIdSolicitudTxt.Text = "N° Sol.:";
-
-            this.lblIdSolicitud.AutoSize = true;
-            this.lblIdSolicitud.Font = new Font("Microsoft Sans Serif", 8.25F, FontStyle.Bold, GraphicsUnit.Point);
-            this.lblIdSolicitud.Location = new Point(80, 25);
-            this.lblIdSolicitud.Name = "lblIdSolicitud";
-            this.lblIdSolicitud.Size = new Size(11, 13);
-            this.lblIdSolicitud.TabIndex = 1;
-            this.lblIdSolicitud.Text = "-";
-
-            this.lblOrdenFabTxt.AutoSize = true;
-            this.lblOrdenFabTxt.Location = new Point(15, 45);
-            this.lblOrdenFabTxt.Name = "lblOrdenFabTxt";
-            this.lblOrdenFabTxt.Size = new Size(64, 13);
-            this.lblOrdenFabTxt.TabIndex = 2;
-            this.lblOrdenFabTxt.Text = "Orden Fab.:";
-
-            this.lblOrdenFab.AutoSize = true;
-            this.lblOrdenFab.Font = new Font("Microsoft Sans Serif", 8.25F, FontStyle.Bold, GraphicsUnit.Point);
-            this.lblOrdenFab.Location = new Point(80, 45);
-            this.lblOrdenFab.Name = "lblOrdenFab";
-            this.lblOrdenFab.Size = new Size(11, 13);
-            this.lblOrdenFab.TabIndex = 3;
-            this.lblOrdenFab.Text = "-";
-
-            this.lblDescripcionTxt.AutoSize = true;
-            this.lblDescripcionTxt.Location = new Point(15, 65);
-            this.lblDescripcionTxt.Name = "lblDescripcionTxt";
-            this.lblDescripcionTxt.Size = new Size(66, 13);
-            this.lblDescripcionTxt.TabIndex = 4;
-            this.lblDescripcionTxt.Text = "Descripción:";
-
-            this.lblDescripcion.Location = new Point(15, 85);
-            this.lblDescripcion.Name = "lblDescripcion";
-            this.lblDescripcion.Size = new Size(190, 30);
-            this.lblDescripcion.TabIndex = 5;
-            this.lblDescripcion.Text = "-";
-
-            this.lblCantidadTxt.AutoSize = true;
-            this.lblCantidadTxt.Location = new Point(15, 120);
-            this.lblCantidadTxt.Name = "lblCantidadTxt";
-            this.lblCantidadTxt.Size = new Size(52, 13);
-            this.lblCantidadTxt.TabIndex = 6;
-            this.lblCantidadTxt.Text = "Cantidad:";
-
-            this.lblCantidad.AutoSize = true;
-            this.lblCantidad.Font = new Font("Microsoft Sans Serif", 8.25F, FontStyle.Bold, GraphicsUnit.Point);
-            this.lblCantidad.Location = new Point(80, 120);
-            this.lblCantidad.Name = "lblCantidad";
-            this.lblCantidad.Size = new Size(11, 13);
-            this.lblCantidad.TabIndex = 7;
-            this.lblCantidad.Text = "-";
-
-            this.lblUPCTxt.AutoSize = true;
-            this.lblUPCTxt.Location = new Point(15, 140);
-            this.lblUPCTxt.Name = "lblUPCTxt";
-            this.lblUPCTxt.Size = new Size(33, 13);
-            this.lblUPCTxt.TabIndex = 8;
-            this.lblUPCTxt.Text = "UPC:";
-
-            this.lblUPC.AutoSize = true;
-            this.lblUPC.Font = new Font("Microsoft Sans Serif", 8.25F, FontStyle.Bold, GraphicsUnit.Point);
-            this.lblUPC.Location = new Point(80, 140);
-            this.lblUPC.Name = "lblUPC";
-            this.lblUPC.Size = new Size(11, 13);
-            this.lblUPC.TabIndex = 9;
-            this.lblUPC.Text = "-";
-
-            this.lblUPC2Txt.AutoSize = true;
-            this.lblUPC2Txt.Location = new Point(15, 160);
-            this.lblUPC2Txt.Name = "lblUPC2Txt";
-            this.lblUPC2Txt.Size = new Size(39, 13);
-            this.lblUPC2Txt.TabIndex = 10;
-            this.lblUPC2Txt.Text = "UPC2:";
-
-            this.lblUPC2.AutoSize = true;
-            this.lblUPC2.Font = new Font("Microsoft Sans Serif", 8.25F, FontStyle.Bold, GraphicsUnit.Point);
-            this.lblUPC2.Location = new Point(80, 160);
-            this.lblUPC2.Name = "lblUPC2";
-            this.lblUPC2.Size = new Size(11, 13);
-            this.lblUPC2.TabIndex = 11;
-            this.lblUPC2.Text = "-";
-
+            infoGroupBox.Controls.Add(lblIdSolicitudTxt);
+            infoGroupBox.Controls.Add(lblIdSolicitud);
+            infoGroupBox.Controls.Add(lblOrdenFabTxt);
+            infoGroupBox.Controls.Add(lblOrdenFab);
+            infoGroupBox.Controls.Add(lblDescripcionTxt);
+            infoGroupBox.Controls.Add(lblDescripcion);
+            infoGroupBox.Controls.Add(lblCantidadTxt);
+            infoGroupBox.Controls.Add(lblCantidad);
+            infoGroupBox.Controls.Add(lblUPCTxt);
+            infoGroupBox.Controls.Add(lblUPC);
+            infoGroupBox.Controls.Add(lblUPC2Txt);
+            infoGroupBox.Controls.Add(lblUPC2);
+            infoGroupBox.Location = new Point(782, 381);
+            infoGroupBox.Margin = new Padding(4, 3, 4, 3);
+            infoGroupBox.Name = "infoGroupBox";
+            infoGroupBox.Padding = new Padding(4, 3, 4, 3);
+            infoGroupBox.Size = new Size(257, 208);
+            infoGroupBox.TabIndex = 4;
+            infoGroupBox.TabStop = false;
+            infoGroupBox.Text = "Información";
+            // 
+            // lblIdSolicitudTxt
+            // 
+            lblIdSolicitudTxt.AutoSize = true;
+            lblIdSolicitudTxt.Location = new Point(18, 29);
+            lblIdSolicitudTxt.Margin = new Padding(4, 0, 4, 0);
+            lblIdSolicitudTxt.Name = "lblIdSolicitudTxt";
+            lblIdSolicitudTxt.Size = new Size(46, 15);
+            lblIdSolicitudTxt.TabIndex = 0;
+            lblIdSolicitudTxt.Text = "N° Sol.:";
+            // 
+            // lblIdSolicitud
+            // 
+            lblIdSolicitud.AutoSize = true;
+            lblIdSolicitud.Font = new Font("Microsoft Sans Serif", 8.25F, FontStyle.Bold);
+            lblIdSolicitud.Location = new Point(93, 29);
+            lblIdSolicitud.Margin = new Padding(4, 0, 4, 0);
+            lblIdSolicitud.Name = "lblIdSolicitud";
+            lblIdSolicitud.Size = new Size(11, 13);
+            lblIdSolicitud.TabIndex = 1;
+            lblIdSolicitud.Text = "-";
+            // 
+            // lblOrdenFabTxt
+            // 
+            lblOrdenFabTxt.AutoSize = true;
+            lblOrdenFabTxt.Location = new Point(18, 52);
+            lblOrdenFabTxt.Margin = new Padding(4, 0, 4, 0);
+            lblOrdenFabTxt.Name = "lblOrdenFabTxt";
+            lblOrdenFabTxt.Size = new Size(68, 15);
+            lblOrdenFabTxt.TabIndex = 2;
+            lblOrdenFabTxt.Text = "Orden Fab.:";
+            // 
+            // lblOrdenFab
+            // 
+            lblOrdenFab.AutoSize = true;
+            lblOrdenFab.Font = new Font("Microsoft Sans Serif", 8.25F, FontStyle.Bold);
+            lblOrdenFab.Location = new Point(93, 52);
+            lblOrdenFab.Margin = new Padding(4, 0, 4, 0);
+            lblOrdenFab.Name = "lblOrdenFab";
+            lblOrdenFab.Size = new Size(11, 13);
+            lblOrdenFab.TabIndex = 3;
+            lblOrdenFab.Text = "-";
+            // 
+            // lblDescripcionTxt
+            // 
+            lblDescripcionTxt.AutoSize = true;
+            lblDescripcionTxt.Location = new Point(18, 75);
+            lblDescripcionTxt.Margin = new Padding(4, 0, 4, 0);
+            lblDescripcionTxt.Name = "lblDescripcionTxt";
+            lblDescripcionTxt.Size = new Size(72, 15);
+            lblDescripcionTxt.TabIndex = 4;
+            lblDescripcionTxt.Text = "Descripción:";
+            // 
+            // lblDescripcion
+            // 
+            lblDescripcion.Location = new Point(18, 98);
+            lblDescripcion.Margin = new Padding(4, 0, 4, 0);
+            lblDescripcion.Name = "lblDescripcion";
+            lblDescripcion.Size = new Size(222, 35);
+            lblDescripcion.TabIndex = 5;
+            lblDescripcion.Text = "-";
+            // 
+            // lblCantidadTxt
+            // 
+            lblCantidadTxt.AutoSize = true;
+            lblCantidadTxt.Location = new Point(18, 138);
+            lblCantidadTxt.Margin = new Padding(4, 0, 4, 0);
+            lblCantidadTxt.Name = "lblCantidadTxt";
+            lblCantidadTxt.Size = new Size(58, 15);
+            lblCantidadTxt.TabIndex = 6;
+            lblCantidadTxt.Text = "Cantidad:";
+            // 
+            // lblCantidad
+            // 
+            lblCantidad.AutoSize = true;
+            lblCantidad.Font = new Font("Microsoft Sans Serif", 8.25F, FontStyle.Bold);
+            lblCantidad.Location = new Point(93, 138);
+            lblCantidad.Margin = new Padding(4, 0, 4, 0);
+            lblCantidad.Name = "lblCantidad";
+            lblCantidad.Size = new Size(11, 13);
+            lblCantidad.TabIndex = 7;
+            lblCantidad.Text = "-";
+            // 
+            // lblUPCTxt
+            // 
+            lblUPCTxt.AutoSize = true;
+            lblUPCTxt.Location = new Point(18, 162);
+            lblUPCTxt.Margin = new Padding(4, 0, 4, 0);
+            lblUPCTxt.Name = "lblUPCTxt";
+            lblUPCTxt.Size = new Size(33, 15);
+            lblUPCTxt.TabIndex = 8;
+            lblUPCTxt.Text = "UPC:";
+            // 
+            // lblUPC
+            // 
+            lblUPC.AutoSize = true;
+            lblUPC.Font = new Font("Microsoft Sans Serif", 8.25F, FontStyle.Bold);
+            lblUPC.Location = new Point(93, 162);
+            lblUPC.Margin = new Padding(4, 0, 4, 0);
+            lblUPC.Name = "lblUPC";
+            lblUPC.Size = new Size(11, 13);
+            lblUPC.TabIndex = 9;
+            lblUPC.Text = "-";
+            // 
+            // lblUPC2Txt
+            // 
+            lblUPC2Txt.AutoSize = true;
+            lblUPC2Txt.Location = new Point(18, 185);
+            lblUPC2Txt.Margin = new Padding(4, 0, 4, 0);
+            lblUPC2Txt.Name = "lblUPC2Txt";
+            lblUPC2Txt.Size = new Size(39, 15);
+            lblUPC2Txt.TabIndex = 10;
+            lblUPC2Txt.Text = "UPC2:";
+            // 
+            // lblUPC2
+            // 
+            lblUPC2.AutoSize = true;
+            lblUPC2.Font = new Font("Microsoft Sans Serif", 8.25F, FontStyle.Bold);
+            lblUPC2.Location = new Point(93, 185);
+            lblUPC2.Margin = new Padding(4, 0, 4, 0);
+            lblUPC2.Name = "lblUPC2";
+            lblUPC2.Size = new Size(11, 13);
+            lblUPC2.TabIndex = 11;
+            lblUPC2.Text = "-";
             // 
             // btnImprimir
             // 
-            this.btnImprimir.Anchor = ((AnchorStyles)((AnchorStyles.Bottom | AnchorStyles.Right)));
-            this.btnImprimir.BackColor = Color.LightGreen;
-            this.btnImprimir.Font = new Font("Microsoft Sans Serif", 9F, FontStyle.Bold, GraphicsUnit.Point);
-            this.btnImprimir.Location = new Point(910, 400);
-            this.btnImprimir.Name = "btnImprimir";
-            this.btnImprimir.Size = new Size(80, 40);
-            this.btnImprimir.TabIndex = 5;
-            this.btnImprimir.Text = "Imprimir";
-            this.btnImprimir.UseVisualStyleBackColor = false;
-
+            btnImprimir.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+            btnImprimir.BackColor = Color.LightGreen;
+            btnImprimir.Font = new Font("Microsoft Sans Serif", 9F, FontStyle.Bold);
+            btnImprimir.Location = new Point(1062, 462);
+            btnImprimir.Margin = new Padding(4, 3, 4, 3);
+            btnImprimir.Name = "btnImprimir";
+            btnImprimir.Size = new Size(93, 46);
+            btnImprimir.TabIndex = 5;
+            btnImprimir.Text = "Imprimir";
+            btnImprimir.UseVisualStyleBackColor = false;
             // 
             // btnPrueba
             // 
-            this.btnPrueba.Anchor = ((AnchorStyles)((AnchorStyles.Bottom | AnchorStyles.Right)));
-            this.btnPrueba.Location = new Point(910, 450);
-            this.btnPrueba.Name = "btnPrueba";
-            this.btnPrueba.Size = new Size(80, 30);
-            this.btnPrueba.TabIndex = 6;
-            this.btnPrueba.Text = "Prueba";
-            this.btnPrueba.UseVisualStyleBackColor = true;
-
+            btnPrueba.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+            btnPrueba.Location = new Point(1062, 519);
+            btnPrueba.Margin = new Padding(4, 3, 4, 3);
+            btnPrueba.Name = "btnPrueba";
+            btnPrueba.Size = new Size(93, 35);
+            btnPrueba.TabIndex = 6;
+            btnPrueba.Text = "Prueba";
+            btnPrueba.UseVisualStyleBackColor = true;
             // 
             // btnRefrescar
             // 
-            this.btnRefrescar.Anchor = ((AnchorStyles)((AnchorStyles.Bottom | AnchorStyles.Right)));
-            this.btnRefrescar.Location = new Point(910, 490);
-            this.btnRefrescar.Name = "btnRefrescar";
-            this.btnRefrescar.Size = new Size(80, 30);
-            this.btnRefrescar.TabIndex = 7;
-            this.btnRefrescar.Text = "Refrescar";
-            this.btnRefrescar.UseVisualStyleBackColor = true;
-            this.btnRefrescar.Click += new EventHandler((s, e) => RefrescarDatos());
-
+            btnRefrescar.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+            btnRefrescar.Location = new Point(1062, 565);
+            btnRefrescar.Margin = new Padding(4, 3, 4, 3);
+            btnRefrescar.Name = "btnRefrescar";
+            btnRefrescar.Size = new Size(93, 35);
+            btnRefrescar.TabIndex = 7;
+            btnRefrescar.Text = "Refrescar";
+            btnRefrescar.UseVisualStyleBackColor = true;
             // 
             // coloresPanel
             // 
-            this.coloresPanel.Anchor = ((AnchorStyles)((AnchorStyles.Bottom | AnchorStyles.Left)));
-            this.coloresPanel.BorderStyle = BorderStyle.FixedSingle;
-            this.coloresPanel.Location = new Point(12, 470);
-            this.coloresPanel.Name = "coloresPanel";
-            this.coloresPanel.Size = new Size(638, 150);
-            this.coloresPanel.TabIndex = 8;
-
-            // Inicializar botones de colores
-            InitializeColorButtons();
-
+            coloresPanel.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
+            coloresPanel.BorderStyle = BorderStyle.FixedSingle;
+            coloresPanel.Location = new Point(14, 542);
+            coloresPanel.Margin = new Padding(4, 3, 4, 3);
+            coloresPanel.Name = "coloresPanel";
+            coloresPanel.Size = new Size(744, 173);
+            coloresPanel.TabIndex = 8;
+            // 
+            // dataGridViewTextBoxColumn1
+            // 
+            dataGridViewTextBoxColumn1.HeaderText = "N° Sol.";
+            dataGridViewTextBoxColumn1.Name = "dataGridViewTextBoxColumn1";
+            dataGridViewTextBoxColumn1.ReadOnly = true;
+            // 
+            // dataGridViewTextBoxColumn2
+            // 
+            dataGridViewTextBoxColumn2.HeaderText = "Orden Fab.";
+            dataGridViewTextBoxColumn2.Name = "dataGridViewTextBoxColumn2";
+            dataGridViewTextBoxColumn2.ReadOnly = true;
+            // 
+            // dataGridViewTextBoxColumn3
+            // 
+            dataGridViewTextBoxColumn3.HeaderText = "Descripción";
+            dataGridViewTextBoxColumn3.Name = "dataGridViewTextBoxColumn3";
+            dataGridViewTextBoxColumn3.ReadOnly = true;
+            // 
+            // dataGridViewTextBoxColumn4
+            // 
+            dataGridViewTextBoxColumn4.HeaderText = "Cantidad";
+            dataGridViewTextBoxColumn4.Name = "dataGridViewTextBoxColumn4";
+            dataGridViewTextBoxColumn4.ReadOnly = true;
+            // 
+            // dataGridViewTextBoxColumn5
+            // 
+            dataGridViewTextBoxColumn5.HeaderText = "Color";
+            dataGridViewTextBoxColumn5.Name = "dataGridViewTextBoxColumn5";
+            dataGridViewTextBoxColumn5.ReadOnly = true;
+            // 
+            // dataGridViewTextBoxColumn6
+            // 
+            dataGridViewTextBoxColumn6.HeaderText = "Observaciones";
+            dataGridViewTextBoxColumn6.Name = "dataGridViewTextBoxColumn6";
+            dataGridViewTextBoxColumn6.ReadOnly = true;
+            // 
+            // dataGridViewTextBoxColumn7
+            // 
+            dataGridViewTextBoxColumn7.HeaderText = "Fecha Req.";
+            dataGridViewTextBoxColumn7.Name = "dataGridViewTextBoxColumn7";
+            dataGridViewTextBoxColumn7.ReadOnly = true;
             // 
             // BaseEtiquetaForm
             // 
-            this.AutoScaleDimensions = new SizeF(6F, 13F);
-            this.AutoScaleMode = AutoScaleMode.Font;
-            this.ClientSize = new Size(1084, 661);
-            this.Controls.Add(this.coloresPanel);
-            this.Controls.Add(this.btnRefrescar);
-            this.Controls.Add(this.btnPrueba);
-            this.Controls.Add(this.btnImprimir);
-            this.Controls.Add(this.infoGroupBox);
-            this.Controls.Add(this.posicionesGroupBox);
-            this.Controls.Add(this.etiquetaGroupBox);
-            this.Controls.Add(this.statusStrip);
-            this.Controls.Add(this.solicitudesGrid);
-            this.Name = "BaseEtiquetaForm";
-            this.Text = "Sistema de Etiquetas";
-
-            ((System.ComponentModel.ISupportInitialize)(this.solicitudesGrid)).EndInit();
-            this.statusStrip.ResumeLayout(false);
-            this.statusStrip.PerformLayout();
-            this.etiquetaGroupBox.ResumeLayout(false);
-            this.etiquetaGroupBox.PerformLayout();
-            this.posicionesGroupBox.ResumeLayout(false);
-            this.posicionesGroupBox.PerformLayout();
-            this.infoGroupBox.ResumeLayout(false);
-            this.infoGroupBox.PerformLayout();
-            this.ResumeLayout(false);
-            this.PerformLayout();
+            AutoScaleDimensions = new SizeF(7F, 15F);
+            AutoScaleMode = AutoScaleMode.Font;
+            ClientSize = new Size(1265, 763);
+            Controls.Add(coloresPanel);
+            Controls.Add(btnRefrescar);
+            Controls.Add(btnPrueba);
+            Controls.Add(btnImprimir);
+            Controls.Add(infoGroupBox);
+            Controls.Add(posicionesGroupBox);
+            Controls.Add(etiquetaGroupBox);
+            Controls.Add(statusStrip);
+            Controls.Add(solicitudesGrid);
+            Margin = new Padding(4, 3, 4, 3);
+            Name = "BaseEtiquetaForm";
+            Text = "Sistema de Etiquetas";
+            ((System.ComponentModel.ISupportInitialize)solicitudesGrid).EndInit();
+            statusStrip.ResumeLayout(false);
+            statusStrip.PerformLayout();
+            etiquetaGroupBox.ResumeLayout(false);
+            etiquetaGroupBox.PerformLayout();
+            posicionesGroupBox.ResumeLayout(false);
+            posicionesGroupBox.PerformLayout();
+            infoGroupBox.ResumeLayout(false);
+            infoGroupBox.PerformLayout();
+            ResumeLayout(false);
+            PerformLayout();
         }
 
         private void InitializeColorButtons()
@@ -637,5 +726,13 @@ namespace EtiquetasApp.Forms
         }
 
         #endregion
+
+        private DataGridViewTextBoxColumn dataGridViewTextBoxColumn1;
+        private DataGridViewTextBoxColumn dataGridViewTextBoxColumn2;
+        private DataGridViewTextBoxColumn dataGridViewTextBoxColumn3;
+        private DataGridViewTextBoxColumn dataGridViewTextBoxColumn4;
+        private DataGridViewTextBoxColumn dataGridViewTextBoxColumn5;
+        private DataGridViewTextBoxColumn dataGridViewTextBoxColumn6;
+        private DataGridViewTextBoxColumn dataGridViewTextBoxColumn7;
     }
 }

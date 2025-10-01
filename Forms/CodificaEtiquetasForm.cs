@@ -71,26 +71,28 @@ namespace EtiquetasApp.Forms
         {
             // Configurar ComboBox de tipo de etiqueta (filtro)
             tipoEtiquetaFiltroComboBox.Items.Add("Todos");
-            foreach (TipoEtiqueta tipo in Enum.GetValues(typeof(TipoEtiqueta)))
-            {
-                tipoEtiquetaFiltroComboBox.Items.Add(tipo.GetDisplayName());
-            }
+            tipoEtiquetaFiltroComboBox.Items.Add("MOLDURAS");
+            tipoEtiquetaFiltroComboBox.Items.Add("EAN13");
+            tipoEtiquetaFiltroComboBox.Items.Add("I2DE5");
+            tipoEtiquetaFiltroComboBox.Items.Add("CBCOE");
+            tipoEtiquetaFiltroComboBox.Items.Add("DUAL");
             tipoEtiquetaFiltroComboBox.SelectedIndex = 0;
 
             // Configurar ComboBox de tipo de etiqueta (datos)
             tipoEtiquetaComboBox.Items.Clear();
-            foreach (TipoEtiqueta tipo in Enum.GetValues(typeof(TipoEtiqueta)))
-            {
-                tipoEtiquetaComboBox.Items.Add(tipo.GetDisplayName());
-            }
+            tipoEtiquetaComboBox.Items.Add("MOLDURAS");
+            tipoEtiquetaComboBox.Items.Add("EAN13");
+            tipoEtiquetaComboBox.Items.Add("I2DE5");
+            tipoEtiquetaComboBox.Items.Add("CBCOE");
+            tipoEtiquetaComboBox.Items.Add("DUAL");
             tipoEtiquetaComboBox.SelectedIndex = 0;
 
             // Configurar ComboBox de colores
             colorComboBox.Items.Clear();
-            foreach (ColorEtiqueta color in Enum.GetValues(typeof(ColorEtiqueta)))
-            {
-                colorComboBox.Items.Add(color.GetDisplayName());
-            }
+            colorComboBox.Items.Add("Blancas");
+            colorComboBox.Items.Add("Rojas");
+            colorComboBox.Items.Add("Bicolor");
+            colorComboBox.Items.Add("N/A");
             colorComboBox.SelectedIndex = 0;
 
             // Configurar controles numéricos
@@ -111,7 +113,7 @@ namespace EtiquetasApp.Forms
         {
             try
             {
-                maestrosCodigos = DatabaseService.GetMaestroCodigosEtiquetas();
+                maestrosCodigos = DatabaseService.MaestroCodigosEtiquetas;
                 AplicarFiltros();
                 ActualizarEstadisticas();
             }
@@ -156,9 +158,9 @@ namespace EtiquetasApp.Forms
 
         private bool FiltrarPorTipo(MaestroCodigoEtiqueta maestro)
         {
-            if (tipoEtiquetaFiltroComboBox.SelectedIndex <= 0) return true;
+            if (tipoEtiquetaFiltroComboBox.SelectedIndex == 0) return true; // "Todos"
             var tipoSeleccionado = tipoEtiquetaFiltroComboBox.SelectedItem.ToString();
-            return maestro.TipoEtiquetaDescripcion.Contains(tipoSeleccionado);
+            return maestro.TipoEtiqueta == tipoSeleccionado;
         }
 
         private bool FiltrarPorActivo(MaestroCodigoEtiqueta maestro)
@@ -179,14 +181,11 @@ namespace EtiquetasApp.Forms
                     row.CreateCells(maestrosGrid);
 
                     row.Cells[0].Value = maestro.PartId;
-                    row.Cells[1].Value = maestro.Descripcion;
-                    row.Cells[2].Value = maestro.TipoEtiquetaDescripcion;
-                    row.Cells[3].Value = maestro.UPC1;
-                    row.Cells[4].Value = maestro.UPC2;
-                    row.Cells[5].Value = maestro.ColorEtiqueta;
-                    row.Cells[6].Value = maestro.EstadoDescripcion;
-                    row.Cells[7].Value = maestro.FechaCreacion.ToString("dd/MM/yyyy");
-                    row.Cells[8].Value = maestro.UsuarioCreacion ?? "";
+                    row.Cells[1].Value = maestro.UPC1;
+                    row.Cells[2].Value = maestro.Descripcion;
+                    row.Cells[3].Value = maestro.TipoEtiqueta;
+                    row.Cells[4].Value = maestro.ColorEtiqueta;
+                    row.Cells[5].Value = maestro.Activo ? "Activo" : "Inactivo";
 
                     // Colorear filas según estado
                     if (!maestro.Activo)
@@ -194,7 +193,7 @@ namespace EtiquetasApp.Forms
                         row.DefaultCellStyle.BackColor = Color.LightGray;
                         row.DefaultCellStyle.ForeColor = Color.DarkGray;
                     }
-                    else if (!maestro.EsValidoParaImpresion)
+                    else if (!maestro.ValidarConfiguracion())
                     {
                         row.DefaultCellStyle.BackColor = Color.LightYellow;
                     }
@@ -216,13 +215,14 @@ namespace EtiquetasApp.Forms
                 var total = maestrosFiltrados.Count;
                 var activos = maestrosFiltrados.Count(m => m.Activo);
                 var inactivos = maestrosFiltrados.Count(m => !m.Activo);
-                var validosImpresion = maestrosFiltrados.Count(m => m.EsValidoParaImpresion);
+                var validosImpresion = maestrosFiltrados.Count(m => m.ValidarConfiguracion());
 
                 lblTotalMaestros.Text = total.ToString("N0");
                 lblActivos.Text = activos.ToString("N0");
                 lblInactivos.Text = inactivos.ToString("N0");
                 lblValidosImpresion.Text = validosImpresion.ToString("N0");
 
+                contadorLabel.Text = $"{total:N0} registros";
                 statusLabel.Text = $"Mostrando {total:N0} maestros | {activos:N0} activos | {validosImpresion:N0} válidos para impresión";
             }
             catch (Exception ex)
@@ -252,7 +252,7 @@ namespace EtiquetasApp.Forms
             bool haySeleccion = maestro != null;
 
             btnEliminar.Enabled = haySeleccion && maestro.Activo && !esNuevoRegistro;
-            btnActivar.Enabled = haySeleccion && !maestro.Activo && !esNuevoRegistro;
+            btnActivar.Enabled = haySeleccion && !esNuevoRegistro;
             btnClonar.Enabled = haySeleccion && !esNuevoRegistro;
 
             btnActivar.Text = (maestro != null && maestro.Activo) ? "Desactivar" : "Activar";
@@ -291,10 +291,11 @@ namespace EtiquetasApp.Forms
                 lblFechaCreacion.Text = maestro.FechaCreacion.ToString("dd/MM/yyyy HH:mm");
                 lblUsuarioCreacion.Text = maestro.UsuarioCreacion ?? "";
                 lblFechaModificacion.Text = maestro.FechaModificacion?.ToString("dd/MM/yyyy HH:mm") ?? "";
-                lblEstado.Text = maestro.EstadoDescripcion;
-                lblEstado.ForeColor = maestro.Activo ? Color.DarkGreen : Color.Red;
+                lblEstado.Text = maestro.Activo ? "Activo" : "Inactivo";
+                lblEstado.ForeColor = maestro.Activo ? Color.Green : Color.Red;
 
-                ActualizarInformacionValidacion(maestro);
+                // Mostrar validaciones
+                ActualizarValidaciones(maestro);
             }
             catch (Exception ex)
             {
@@ -302,160 +303,86 @@ namespace EtiquetasApp.Forms
             }
         }
 
-        private void ActualizarInformacionValidacion(MaestroCodigoEtiqueta maestro)
+        private void ActualizarValidaciones(MaestroCodigoEtiqueta maestro)
         {
             var validaciones = new List<string>();
 
-            if (maestro.ValidarUPC())
-                validaciones.Add("✓ Códigos UPC válidos");
-            else
-                validaciones.Add("⚠ Códigos UPC inválidos");
+            if (string.IsNullOrEmpty(maestro.UPC1))
+                validaciones.Add("⚠ UPC1 requerido");
 
-            if (maestro.ValidarConfiguracion())
-                validaciones.Add("✓ Configuración válida");
-            else
-                validaciones.Add("⚠ Configuración inválida");
+            if (string.IsNullOrEmpty(maestro.Descripcion))
+                validaciones.Add("⚠ Descripción requerida");
 
-            if (maestro.EsValidoParaImpresion)
-                validaciones.Add("✓ Listo para impresión");
-            else
-                validaciones.Add("⚠ No listo para impresión");
+            if (maestro.RequiereLogo && string.IsNullOrEmpty(maestro.NombreLogo))
+                validaciones.Add("⚠ Nombre de logo requerido");
 
-            lblValidaciones.Text = string.Join("\n", validaciones);
+            lblValidaciones.Text = validaciones.Count > 0 ? string.Join(", ", validaciones) : "✓ Configuración válida";
+            lblValidaciones.ForeColor = validaciones.Count > 0 ? Color.Red : Color.Green;
+
+            // Mostrar ejemplo de UPC
+            lblEjemploUPC.Text = $"Ejemplo: {maestro.UPC1}";
         }
 
         private void BtnNuevo_Click(object sender, EventArgs e)
         {
-            try
-            {
-                esNuevoRegistro = true;
-                maestroActual = new MaestroCodigoEtiqueta();
-                LimpiarFormulario();
-                HabilitarEdicion(true);
-                partIdDatoTextBox.Focus();
-                statusLabel.Text = "Creando nuevo maestro de códigos";
-            }
-            catch (Exception ex)
-            {
-                MostrarError($"Error iniciando nuevo registro: {ex.Message}");
-            }
+            esNuevoRegistro = true;
+            maestroActual = new MaestroCodigoEtiqueta();
+            LimpiarFormulario();
+            HabilitarEdicion(true);
+            partIdDatoTextBox.Focus();
+            statusLabel.Text = "Creando nuevo maestro de códigos";
         }
 
         private void BtnGuardar_Click(object sender, EventArgs e)
         {
             try
             {
-                if (ValidarDatosCompletos())
-                {
-                    GuardarMaestro();
-                }
-            }
-            catch (Exception ex)
-            {
-                MostrarError($"Error guardando maestro: {ex.Message}");
-            }
-        }
-
-        private bool ValidarDatosCompletos()
-        {
-            var errores = new List<string>();
-
-            if (string.IsNullOrEmpty(partIdDatoTextBox.Text.Trim()))
-                errores.Add("El Part ID es requerido");
-
-            if (string.IsNullOrEmpty(descripcionTextBox.Text.Trim()))
-                errores.Add("La descripción es requerida");
-
-            if (string.IsNullOrEmpty(upc1TextBox.Text.Trim()))
-                errores.Add("El código UPC1 es requerido");
-
-            // Validar si ya existe el Part ID (solo para nuevos)
-            if (esNuevoRegistro)
-            {
-                var existe = maestrosCodigos.Any(m => m.PartId.Equals(partIdDatoTextBox.Text.Trim(), StringComparison.OrdinalIgnoreCase));
-                if (existe)
-                    errores.Add("Ya existe un maestro con este Part ID");
-            }
-
-            // Validaciones específicas por tipo
-            var tipo = ObtenerTipoEtiquetaSeleccionado();
-            if (tipo.RequiereDualUPC() && string.IsNullOrEmpty(upc2TextBox.Text.Trim()))
-                errores.Add("El tipo DUAL requiere UPC2");
-
-            if (tipo == TipoEtiqueta.EAN13 && !ValidarEAN13(upc1TextBox.Text.Trim()))
-                errores.Add("El código EAN13 debe tener 13 dígitos numéricos");
-
-            if (requireLogoCheckBox.Checked && string.IsNullOrEmpty(logoTextBox.Text.Trim()))
-                errores.Add("Debe especificar el nombre del logo");
-
-            if (errores.Any())
-            {
-                var mensaje = "Errores de validación:\n" + string.Join("\n", errores);
-                MostrarError(mensaje);
-                return false;
-            }
-
-            return true;
-        }
-
-        private bool ValidarEAN13(string codigo)
-        {
-            return codigo.Length == 13 && codigo.All(char.IsDigit);
-        }
-
-        private TipoEtiqueta ObtenerTipoEtiquetaSeleccionado()
-        {
-            if (tipoEtiquetaComboBox.SelectedIndex >= 0)
-            {
-                var tipoText = tipoEtiquetaComboBox.SelectedItem.ToString();
-                return EnumExtensions.ParseTipoEtiqueta(tipoText);
-            }
-            return TipoEtiqueta.CBCOE;
-        }
-
-        private void GuardarMaestro()
-        {
-            try
-            {
-                // Actualizar datos del maestro actual
-                maestroActual.PartId = partIdDatoTextBox.Text.Trim();
-                maestroActual.Descripcion = descripcionTextBox.Text.Trim();
-                maestroActual.UPC1 = upc1TextBox.Text.Trim();
-                maestroActual.UPC2 = upc2TextBox.Text.Trim();
-                maestroActual.TipoEtiqueta = ObtenerTipoEtiquetaSeleccionado().ToCodeString();
-                maestroActual.ColorEtiqueta = colorComboBox.SelectedItem?.ToString() ?? "Blancas";
-                maestroActual.VelocidadImpresion = (int)velocidadNumericUpDown.Value;
-                maestroActual.TemperaturaImpresion = (int)temperaturaNumericUpDown.Value;
-                maestroActual.RequiereLogo = requireLogoCheckBox.Checked;
-                maestroActual.NombreLogo = requireLogoCheckBox.Checked ? logoTextBox.Text.Trim() : "";
-                maestroActual.Observaciones = observacionesTextBox.Text.Trim();
+                if (!ValidarDatos()) return;
 
                 if (esNuevoRegistro)
                 {
+                    // Verificar que no exista ya
+                    if (maestrosCodigos.Any(m => m.PartId == partIdDatoTextBox.Text.Trim()))
+                    {
+                        MostrarError("Ya existe un maestro con ese Part ID");
+                        return;
+                    }
+
+                    maestroActual = new MaestroCodigoEtiqueta();
+                    maestroActual.PartId = partIdDatoTextBox.Text.Trim();
                     maestroActual.UsuarioCreacion = Environment.UserName;
                     maestroActual.FechaCreacion = DateTime.Now;
                 }
-                else
-                {
-                    maestroActual.UsuarioModificacion = Environment.UserName;
-                    maestroActual.FechaModificacion = DateTime.Now;
-                }
 
-                // Aquí se guardaría en la base de datos
-                // var resultado = DatabaseService.SaveMaestroCodigoEtiqueta(maestroActual);
+                // Actualizar datos
+                maestroActual.Descripcion = descripcionTextBox.Text.Trim();
+                maestroActual.UPC1 = upc1TextBox.Text.Trim();
+                maestroActual.UPC2 = upc2TextBox.Text.Trim();
+                maestroActual.TipoEtiqueta = tipoEtiquetaComboBox.SelectedItem.ToString();
+                maestroActual.ColorEtiqueta = colorComboBox.SelectedItem.ToString();
+                maestroActual.VelocidadImpresion = (int)velocidadNumericUpDown.Value;
+                maestroActual.TemperaturaImpresion = (int)temperaturaNumericUpDown.Value;
+                maestroActual.RequiereLogo = requireLogoCheckBox.Checked;
+                maestroActual.NombreLogo = logoTextBox.Text.Trim();
+                maestroActual.Observaciones = observacionesTextBox.Text.Trim();
+                maestroActual.UsuarioModificacion = Environment.UserName;
+                maestroActual.FechaModificacion = DateTime.Now;
 
-                // Simular guardado exitoso
+                // Guardar en base de datos
                 if (esNuevoRegistro)
                 {
-                    maestrosCodigos.Add(maestroActual);
+                    DatabaseService.InsertMaestroCodigoEtiqueta(maestroActual);
+                    MostrarMensaje("Maestro creado correctamente", false);
+                }
+                else
+                {
+                    DatabaseService.UpdateMaestroCodigoEtiqueta(maestroActual);
+                    MostrarMensaje("Maestro actualizado correctamente", false);
                 }
 
                 esNuevoRegistro = false;
                 HabilitarEdicion(false);
                 CargarDatos();
-
-                MostrarMensaje("Maestro guardado correctamente", false);
-                statusLabel.Text = "Maestro guardado correctamente";
             }
             catch (Exception ex)
             {
@@ -465,45 +392,18 @@ namespace EtiquetasApp.Forms
 
         private void BtnCancelar_Click(object sender, EventArgs e)
         {
-            if (esNuevoRegistro || FormularioModificado())
-            {
-                var result = MessageBox.Show("¿Está seguro que desea cancelar? Se perderán los cambios no guardados.",
-                                           "Confirmar Cancelación", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
-
-                if (result == DialogResult.No)
-                    return;
-            }
-
-            CancelarEdicion();
-        }
-
-        private void CancelarEdicion()
-        {
             esNuevoRegistro = false;
             HabilitarEdicion(false);
-
-            var maestroSeleccionado = ObtenerMaestroSeleccionado();
-            if (maestroSeleccionado != null)
+            var maestro = ObtenerMaestroSeleccionado();
+            if (maestro != null)
             {
-                CargarDatosMaestro(maestroSeleccionado);
+                CargarDatosMaestro(maestro);
             }
             else
             {
                 LimpiarFormulario();
             }
-
-            statusLabel.Text = "Edición cancelada";
-        }
-
-        private bool FormularioModificado()
-        {
-            if (maestroActual == null) return false;
-
-            return maestroActual.PartId != partIdDatoTextBox.Text.Trim() ||
-                   maestroActual.Descripcion != descripcionTextBox.Text.Trim() ||
-                   maestroActual.UPC1 != upc1TextBox.Text.Trim() ||
-                   maestroActual.UPC2 != upc2TextBox.Text.Trim() ||
-                   maestroActual.Observaciones != observacionesTextBox.Text.Trim();
+            statusLabel.Text = "Operación cancelada";
         }
 
         private void BtnEliminar_Click(object sender, EventArgs e)
@@ -511,7 +411,8 @@ namespace EtiquetasApp.Forms
             var maestro = ObtenerMaestroSeleccionado();
             if (maestro == null) return;
 
-            var result = MessageBox.Show($"¿Está seguro que desea desactivar el maestro '{maestro.PartId}'?",
+            var result = MessageBox.Show($"¿Está seguro de desactivar el maestro '{maestro.PartId}'?\n\n" +
+                                       "Esta acción no elimina el registro, solo lo desactiva.",
                                        "Confirmar Desactivación", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
 
             if (result == DialogResult.Yes)
@@ -519,6 +420,7 @@ namespace EtiquetasApp.Forms
                 try
                 {
                     maestro.Desactivar(Environment.UserName, "Desactivado desde formulario");
+                    DatabaseService.UpdateMaestroCodigoEtiqueta(maestro);
                     CargarDatos();
                     MostrarMensaje("Maestro desactivado correctamente", false);
                 }
@@ -547,6 +449,7 @@ namespace EtiquetasApp.Forms
                     MostrarMensaje("Maestro activado correctamente", false);
                 }
 
+                DatabaseService.UpdateMaestroCodigoEtiqueta(maestro);
                 CargarDatos();
             }
             catch (Exception ex)
@@ -562,28 +465,48 @@ namespace EtiquetasApp.Forms
 
             try
             {
-                var nuevoPartId = Microsoft.VisualBasic.Interaction.InputBox(
-                    "Ingrese el Part ID para el nuevo maestro:",
-                    "Clonar Maestro",
-                    maestro.PartId + "_COPIA");
-
-                if (!string.IsNullOrEmpty(nuevoPartId))
+                var inputForm = new InputDialog("Ingrese el Part ID para el nuevo maestro:", "Clonar Maestro", maestro.PartId + "_COPIA");
+                if (inputForm.ShowDialog() == DialogResult.OK)
                 {
-                    var existe = maestrosCodigos.Any(m => m.PartId.Equals(nuevoPartId, StringComparison.OrdinalIgnoreCase));
-                    if (existe)
+                    var nuevoPartId = inputForm.InputText.Trim();
+
+                    if (string.IsNullOrEmpty(nuevoPartId))
+                    {
+                        MostrarError("Debe ingresar un Part ID válido");
+                        return;
+                    }
+
+                    if (maestrosCodigos.Any(m => m.PartId == nuevoPartId))
                     {
                         MostrarError("Ya existe un maestro con ese Part ID");
                         return;
                     }
 
-                    var clon = maestro.ClonarPara(nuevoPartId, Environment.UserName);
-                    maestrosCodigos.Add(clon);
+                    // Crear clon
+                    var clon = new MaestroCodigoEtiqueta
+                    {
+                        PartId = nuevoPartId,
+                        Descripcion = maestro.Descripcion,
+                        UPC1 = maestro.UPC1,
+                        UPC2 = maestro.UPC2,
+                        TipoEtiqueta = maestro.TipoEtiqueta,
+                        ColorEtiqueta = maestro.ColorEtiqueta,
+                        VelocidadImpresion = maestro.VelocidadImpresion,
+                        TemperaturaImpresion = maestro.TemperaturaImpresion,
+                        RequiereLogo = maestro.RequiereLogo,
+                        NombreLogo = maestro.NombreLogo,
+                        Observaciones = $"Clonado de {maestro.PartId}",
+                        UsuarioCreacion = Environment.UserName,
+                        FechaCreacion = DateTime.Now,
+                        Activo = true
+                    };
+
+                    DatabaseService.InsertMaestroCodigoEtiqueta(clon);
                     CargarDatos();
+                    MostrarMensaje("Maestro clonado correctamente", false);
 
                     // Seleccionar el nuevo registro
                     SeleccionarMaestro(nuevoPartId);
-
-                    MostrarMensaje("Maestro clonado correctamente", false);
                 }
             }
             catch (Exception ex)
@@ -592,136 +515,56 @@ namespace EtiquetasApp.Forms
             }
         }
 
-        private void SeleccionarMaestro(string partId)
-        {
-            foreach (DataGridViewRow row in maestrosGrid.Rows)
-            {
-                var maestro = row.Tag as MaestroCodigoEtiqueta;
-                if (maestro != null && maestro.PartId.Equals(partId, StringComparison.OrdinalIgnoreCase))
-                {
-                    row.Selected = true;
-                    maestrosGrid.CurrentCell = row.Cells[0];
-                    break;
-                }
-            }
-        }
-
-        private void TipoEtiquetaComboBox_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            var tipo = ObtenerTipoEtiquetaSeleccionado();
-
-            // Habilitar/deshabilitar UPC2 según el tipo
-            upc2TextBox.Enabled = tipo.RequiereDualUPC();
-            lblUPC2.Enabled = tipo.RequiereDualUPC();
-
-            if (tipo.RequiereDualUPC())
-            {
-                lblUPC2.Font = new Font(lblUPC2.Font, FontStyle.Bold);
-                lblUPC2.ForeColor = Color.DarkBlue;
-            }
-            else
-            {
-                lblUPC2.Font = new Font(lblUPC2.Font, FontStyle.Regular);
-                lblUPC2.ForeColor = SystemColors.ControlText;
-                upc2TextBox.Clear();
-            }
-
-            // Actualizar ejemplo de UPC
-            ActualizarEjemploUPC(tipo);
-            ValidarFormulario(sender, e);
-        }
-
-        private void ActualizarEjemploUPC(TipoEtiqueta tipo)
-        {
-            switch (tipo)
-            {
-                case TipoEtiqueta.EAN13:
-                    lblEjemploUPC.Text = "Ejemplo: 1234567890123 (13 dígitos)";
-                    break;
-                case TipoEtiqueta.DUAL:
-                    lblEjemploUPC.Text = "Ejemplo UPC1: ABC123, UPC2: DEF456";
-                    break;
-                default:
-                    lblEjemploUPC.Text = "Ejemplo: ABC123456";
-                    break;
-            }
-        }
-
         private void BtnValidarUPC_Click(object sender, EventArgs e)
         {
-            try
+            var upc = upc1TextBox.Text.Trim();
+            if (string.IsNullOrEmpty(upc))
             {
-                var tipo = ObtenerTipoEtiquetaSeleccionado();
-                var upc1 = upc1TextBox.Text.Trim();
-                var upc2 = upc2TextBox.Text.Trim();
-
-                var validaciones = new List<string>();
-
-                if (string.IsNullOrEmpty(upc1))
-                {
-                    validaciones.Add("UPC1 es requerido");
-                }
-                else
-                {
-                    switch (tipo)
-                    {
-                        case TipoEtiqueta.EAN13:
-                            if (ValidarEAN13(upc1))
-                                validaciones.Add("✓ EAN13 válido");
-                            else
-                                validaciones.Add("⚠ EAN13 inválido (debe tener 13 dígitos)");
-                            break;
-                        default:
-                            validaciones.Add("✓ UPC1 formato aceptable");
-                            break;
-                    }
-                }
-
-                if (tipo.RequiereDualUPC())
-                {
-                    if (string.IsNullOrEmpty(upc2))
-                        validaciones.Add("⚠ UPC2 es requerido para tipo DUAL");
-                    else
-                        validaciones.Add("✓ UPC2 presente");
-                }
-
-                var mensaje = string.Join("\n", validaciones);
-                MostrarMensaje(mensaje, validaciones.Any(v => v.Contains("⚠")));
+                MostrarError("Ingrese un código UPC para validar");
+                return;
             }
-            catch (Exception ex)
+
+            // Validación básica
+            if (upc.Length < 8 || upc.Length > 14)
             {
-                MostrarError($"Error validando UPC: {ex.Message}");
+                MostrarError("El código UPC debe tener entre 8 y 14 dígitos");
+                return;
             }
+
+            if (!upc.All(char.IsDigit))
+            {
+                MostrarError("El código UPC solo debe contener números");
+                return;
+            }
+
+            MostrarMensaje("Código UPC válido", false);
         }
 
         private void BtnGenerarUPC_Click(object sender, EventArgs e)
         {
             try
             {
-                var tipo = ObtenerTipoEtiquetaSeleccionado();
                 var partId = partIdDatoTextBox.Text.Trim();
-
                 if (string.IsNullOrEmpty(partId))
                 {
-                    MostrarError("Ingrese primero el Part ID");
+                    MostrarError("Ingrese un Part ID primero");
                     return;
                 }
 
-                switch (tipo)
-                {
-                    case TipoEtiqueta.EAN13:
-                        upc1TextBox.Text = GenerarEAN13(partId);
-                        break;
-                    case TipoEtiqueta.DUAL:
-                        upc1TextBox.Text = $"{partId}_A";
-                        upc2TextBox.Text = $"{partId}_B";
-                        break;
-                    default:
-                        upc1TextBox.Text = partId.Length > 10 ? partId.Substring(0, 10) : partId;
-                        break;
-                }
+                // Generar UPC basado en Part ID
+                var baseCode = partId.Length > 8 ? partId.Substring(0, 8) : partId.PadRight(8, '0');
+                var numerosPart = new string(baseCode.Where(char.IsDigit).ToArray());
 
-                MostrarMensaje("Códigos UPC generados automáticamente. Revise y modifique si es necesario.", true);
+                if (numerosPart.Length < 6)
+                    numerosPart = numerosPart.PadRight(6, '0');
+
+                var codigo = "77" + numerosPart.Substring(0, 6).PadLeft(6, '0');
+                var upcGenerado = GenerarDigitoVerificacion(codigo);
+
+                upc1TextBox.Text = upcGenerado;
+                lblEjemploUPC.Text = $"Generado: {upcGenerado}";
+
+                MostrarMensaje("Código UPC generado automáticamente", false);
             }
             catch (Exception ex)
             {
@@ -729,24 +572,38 @@ namespace EtiquetasApp.Forms
             }
         }
 
-        private string GenerarEAN13(string partId)
+        private void TipoEtiquetaComboBox_SelectedIndexChanged(object sender, EventArgs e)
         {
-            // Generar un EAN13 básico basado en el PartId
-            var codigo = "123" + partId.PadRight(9, '0').Substring(0, 9);
-            if (codigo.Length > 12)
-                codigo = codigo.Substring(0, 12);
-            else
-                codigo = codigo.PadRight(12, '0');
+            // Ajustar configuraciones según el tipo de etiqueta
+            var tipo = tipoEtiquetaComboBox.SelectedItem?.ToString();
 
-            // Calcular dígito de verificación (simplificado)
+            switch (tipo)
+            {
+                case "MOLDURAS":
+                    colorComboBox.Enabled = true;
+                    break;
+                case "EAN13":
+                case "I2DE5":
+                    colorComboBox.SelectedIndex = 3; // N/A
+                    colorComboBox.Enabled = false;
+                    break;
+                case "CBCOE":
+                case "DUAL":
+                    colorComboBox.SelectedIndex = 0; // Blancas
+                    colorComboBox.Enabled = false;
+                    break;
+            }
+        }
+
+        private string GenerarDigitoVerificacion(string codigo)
+        {
             var suma = 0;
-            for (int i = 0; i < 12; i++)
+            for (int i = 0; i < codigo.Length; i++)
             {
                 var digito = int.Parse(codigo[i].ToString());
                 suma += (i % 2 == 0) ? digito : digito * 3;
             }
             var digitoVerificacion = (10 - (suma % 10)) % 10;
-
             return codigo + digitoVerificacion;
         }
 
@@ -844,6 +701,39 @@ namespace EtiquetasApp.Forms
             lblEjemploUPC.Text = "";
         }
 
+        private bool ValidarDatos()
+        {
+            if (string.IsNullOrEmpty(partIdDatoTextBox.Text.Trim()))
+            {
+                MostrarError("El Part ID es requerido");
+                partIdDatoTextBox.Focus();
+                return false;
+            }
+
+            if (string.IsNullOrEmpty(descripcionTextBox.Text.Trim()))
+            {
+                MostrarError("La descripción es requerida");
+                descripcionTextBox.Focus();
+                return false;
+            }
+
+            if (string.IsNullOrEmpty(upc1TextBox.Text.Trim()))
+            {
+                MostrarError("El código UPC1 es requerido");
+                upc1TextBox.Focus();
+                return false;
+            }
+
+            if (requireLogoCheckBox.Checked && string.IsNullOrEmpty(logoTextBox.Text.Trim()))
+            {
+                MostrarError("El nombre del logo es requerido cuando está marcado");
+                logoTextBox.Focus();
+                return false;
+            }
+
+            return true;
+        }
+
         private MaestroCodigoEtiqueta ObtenerMaestroSeleccionado()
         {
             if (maestrosGrid.SelectedRows.Count > 0)
@@ -851,6 +741,21 @@ namespace EtiquetasApp.Forms
                 return maestrosGrid.SelectedRows[0].Tag as MaestroCodigoEtiqueta;
             }
             return null;
+        }
+
+        private void SeleccionarMaestro(string partId)
+        {
+            for (int i = 0; i < maestrosGrid.Rows.Count; i++)
+            {
+                var maestro = maestrosGrid.Rows[i].Tag as MaestroCodigoEtiqueta;
+                if (maestro?.PartId == partId)
+                {
+                    maestrosGrid.ClearSelection();
+                    maestrosGrid.Rows[i].Selected = true;
+                    maestrosGrid.FirstDisplayedScrollingRowIndex = i;
+                    break;
+                }
+            }
         }
 
         private void MostrarError(string mensaje)
@@ -873,6 +778,67 @@ namespace EtiquetasApp.Forms
                 AplicarFiltros();
                 SeleccionarMaestro(partId);
             }
+        }
+    }
+
+    // Clase auxiliar para input dialogs
+    public partial class InputDialog : Form
+    {
+        public string InputText { get; private set; }
+
+        private TextBox textBox;
+        private Button btnOK;
+        private Button btnCancel;
+
+        public InputDialog(string prompt, string title, string defaultValue = "")
+        {
+            InitializeComponent(prompt, title, defaultValue);
+        }
+
+        private void InitializeComponent(string prompt, string title, string defaultValue)
+        {
+            this.Size = new Size(400, 150);
+            this.Text = title;
+            this.StartPosition = FormStartPosition.CenterParent;
+            this.FormBorderStyle = FormBorderStyle.FixedDialog;
+            this.MaximizeBox = false;
+            this.MinimizeBox = false;
+
+            var lblPrompt = new Label
+            {
+                Text = prompt,
+                Location = new Point(12, 15),
+                Size = new Size(360, 20)
+            };
+
+            textBox = new TextBox
+            {
+                Location = new Point(12, 40),
+                Size = new Size(360, 20),
+                Text = defaultValue
+            };
+
+            btnOK = new Button
+            {
+                Text = "Aceptar",
+                Location = new Point(215, 70),
+                Size = new Size(75, 23),
+                DialogResult = DialogResult.OK
+            };
+
+            btnCancel = new Button
+            {
+                Text = "Cancelar",
+                Location = new Point(297, 70),
+                Size = new Size(75, 23),
+                DialogResult = DialogResult.Cancel
+            };
+
+            btnOK.Click += (s, e) => { InputText = textBox.Text; };
+
+            this.Controls.AddRange(new Control[] { lblPrompt, textBox, btnOK, btnCancel });
+            this.AcceptButton = btnOK;
+            this.CancelButton = btnCancel;
         }
     }
 }
