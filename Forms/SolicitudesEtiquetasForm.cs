@@ -13,6 +13,7 @@ namespace EtiquetasApp.Forms
         private List<OrdenFabricacion> ordenesDisponibles;
         private List<MaestroCodigoEtiqueta> maestrosCodigos;
         private SolicitudEtiqueta solicitudActual;
+        private OrdenFabricacion ordenActual; // Orden cargada actualmente
 
         public SolicitudesEtiquetasForm()
         {
@@ -25,6 +26,7 @@ namespace EtiquetasApp.Forms
             ordenesDisponibles = new List<OrdenFabricacion>();
             maestrosCodigos = new List<MaestroCodigoEtiqueta>();
             solicitudActual = new SolicitudEtiqueta();
+            ordenActual = null;
 
             ConfigurarEventos();
             CargarDatosIniciales();
@@ -97,7 +99,7 @@ namespace EtiquetasApp.Forms
         {
             try
             {
-                maestrosCodigos = DatabaseService.MaestroCodigosEtiquetas;
+                maestrosCodigos = DatabaseService.GetMaestroCodigosEtiquetas();
                 statusLabel.Text = "Listo para crear nueva solicitud";
             }
             catch (Exception ex)
@@ -154,7 +156,7 @@ namespace EtiquetasApp.Forms
             {
                 // Buscar en órdenes de requerimientos
                 var ordenes = DatabaseService.GetOrdenesRequerimientos();
-                var orden = ordenes.FirstOrDefault(o => o.OrdenFab.Equals(ordenFab, StringComparison.OrdinalIgnoreCase));
+                var orden = ordenes.FirstOrDefault(o => o.BaseId.Equals(ordenFab, StringComparison.OrdinalIgnoreCase));
 
                 if (orden != null)
                 {
@@ -182,10 +184,17 @@ namespace EtiquetasApp.Forms
         {
             try
             {
+                // Guardar la orden actual
+                ordenActual = orden;
+
                 // Cargar datos de la orden
                 descripcionTextBox.Text = orden.Descripcion;
                 cantidadNumericUpDown.Value = orden.Cantidad;
-                fechaRequieridaDateTime.Value = orden.FechaRequerida.AddDays(-1); // Un día antes
+
+                if (orden.FechaProgramada.HasValue)
+                {
+                    fechaRequieridaDateTime.Value = orden.FechaProgramada.Value.AddDays(-1); // Un día antes
+                }
 
                 // Buscar códigos en maestro
                 var maestro = maestrosCodigos.FirstOrDefault(m => m.PartId.Equals(orden.PartId, StringComparison.OrdinalIgnoreCase));
@@ -208,7 +217,7 @@ namespace EtiquetasApp.Forms
                 // Actualizar información de la orden
                 ActualizarInfoOrden(orden);
 
-                statusLabel.Text = $"Orden cargada: {orden.OrdenFab}";
+                statusLabel.Text = $"Orden cargada: {orden.BaseId}";
             }
             catch (Exception ex)
             {
@@ -222,8 +231,9 @@ namespace EtiquetasApp.Forms
             upc2TextBox.Text = maestro.UPC2;
 
             // Seleccionar tipo de etiqueta
+            var tipoEnum = EnumExtensions.ParseTipoEtiqueta(maestro.TipoEtiqueta);
             var tipoIndex = tipoEtiquetaComboBox.Items.Cast<string>()
-                .ToList().FindIndex(item => item.Contains(maestro.TipoEtiqueta));
+                .ToList().FindIndex(item => item.Equals(tipoEnum.GetDisplayName(), StringComparison.OrdinalIgnoreCase));
             if (tipoIndex >= 0)
                 tipoEtiquetaComboBox.SelectedIndex = tipoIndex;
 
@@ -238,6 +248,15 @@ namespace EtiquetasApp.Forms
 
         private void CrearSolicitudManual(string ordenFab)
         {
+            // Crear orden manual temporal
+            ordenActual = new OrdenFabricacion
+            {
+                BaseId = ordenFab,
+                PartId = "", // Se debe completar manualmente
+                Descripcion = "",
+                Cantidad = 100
+            };
+
             descripcionTextBox.Text = "";
             cantidadNumericUpDown.Value = 100;
             fechaRequieridaDateTime.Value = DateTime.Now.AddDays(2);
@@ -269,8 +288,13 @@ namespace EtiquetasApp.Forms
         {
             var info = $"Parte: {orden.PartId}\n";
             info += $"Cantidad: {orden.Cantidad:N0}\n";
-            info += $"Fecha Inicio: {orden.FechaInicio:dd/MM/yyyy}\n";
-            info += $"Fecha Requerida: {orden.FechaRequerida:dd/MM/yyyy}\n";
+
+            if (orden.FechaInicio.HasValue)
+                info += $"Fecha Inicio: {orden.FechaInicio.Value:dd/MM/yyyy}\n";
+
+            if (orden.FechaProgramada.HasValue)
+                info += $"Fecha Requerida: {orden.FechaProgramada.Value:dd/MM/yyyy}\n";
+
             info += $"Estado: {orden.EstadoDescripcion}\n";
             info += $"Prioridad: {orden.PrioridadDescripcion}";
 
@@ -304,6 +328,8 @@ namespace EtiquetasApp.Forms
             descripcionTextBox.BackColor = SystemColors.Control;
             upc1TextBox.BackColor = SystemColors.Control;
             upc2TextBox.BackColor = SystemColors.Control;
+
+            ordenActual = null;
         }
 
         private void TipoEtiquetaComboBox_SelectedIndexChanged(object sender, EventArgs e)
@@ -443,9 +469,20 @@ namespace EtiquetasApp.Forms
         {
             try
             {
+                // Parsear OrdenFab a int (si no es numérico, usar 0)
+                int ordenFabNum = 0;
+                if (!int.TryParse(ordenFabTextBox.Text.Trim(), out ordenFabNum))
+                {
+                    // Si BaseId no es numérico, extraer números o usar 0
+                    var numeros = new string(ordenFabTextBox.Text.Where(char.IsDigit).ToArray());
+                    if (!string.IsNullOrEmpty(numeros))
+                        int.TryParse(numeros, out ordenFabNum);
+                }
+
                 var solicitud = new SolicitudEtiqueta
                 {
-                    OrdenFab = ordenFabTextBox.Text.Trim(),
+                    OrdenFab = ordenFabNum,
+                    PartId = ordenActual?.PartId ?? "",
                     Descripcion = descripcionTextBox.Text.Trim(),
                     CantidadPedida = (int)cantidadNumericUpDown.Value,
                     FechaRequerida = fechaRequieridaDateTime.Value,
@@ -454,7 +491,7 @@ namespace EtiquetasApp.Forms
                     TipoEtiqueta = ObtenerTipoEtiquetaSeleccionado().ToCodeString(),
                     Color = colorComboBox.SelectedItem?.ToString() ?? "Blancas",
                     Observaciones = observacionesTextBox.Text.Trim(),
-                    UsuarioSolicita = Environment.UserName
+                    Usuario = Environment.UserName
                 };
 
                 if (DatabaseService.InsertSolicitudEtiqueta(solicitud))

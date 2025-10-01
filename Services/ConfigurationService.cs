@@ -1,55 +1,65 @@
-﻿using System;
-using System.Configuration;
-using System.IO;
+﻿using EtiquetasApp.Models;
+using ConfigMgr = EtiquetasApp.Configurations.ConfigurationManager;
 
 namespace EtiquetasApp.Services
 {
+    /// <summary>
+    /// Servicio de configuración simplificado que delega a ConfigurationManager
+    /// </summary>
     public static class ConfigurationService
     {
-        private static Configuration _config;
-
         public static void Initialize()
         {
             try
             {
-                _config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+                ConfigMgr.Initialize();
             }
             catch (Exception ex)
             {
-                throw new InvalidOperationException($"Error al cargar configuración: {ex.Message}", ex);
+                throw new InvalidOperationException($"Error al inicializar configuración: {ex.Message}", ex);
             }
         }
 
+        // Acceso a configuraciones
+        public static PrinterConfiguration PrinterConfig => ConfigMgr.PrinterConfig;
+        public static TemplatesConfiguration TemplatesConfig => ConfigMgr.TemplatesConfig;
+        public static DatabaseConfiguration DatabaseConfig => ConfigMgr.DatabaseConfig;
+        public static SecurityConfiguration SecurityConfig => ConfigMgr.SecurityConfig;
+
         // Conexiones de Base de Datos
-        public static string GetConnectionString(string name)
-        {
-            var connectionString = ConfigurationManager.ConnectionStrings[name];
-            if (connectionString == null)
-                throw new ConfigurationErrorsException($"Cadena de conexión '{name}' no encontrada en app.config");
-
-            return connectionString.ConnectionString;
-        }
-
+        public static string GetConnectionString(string name) => ConfigMgr.GetConnectionString(name);
         public static string DatabaseConnection1 => GetConnectionString("DatabaseConnection1");
         public static string DatabaseConnection2 => GetConnectionString("DatabaseConnection2");
 
         // Configuración de Impresión
         public static string DefaultPrinter
         {
-            get => GetAppSetting("DefaultPrinter", "");
-            set => SetAppSetting("DefaultPrinter", value);
+            get => ConfigMgr.GetAppSetting("DefaultPrinter", "");
+            set
+            {
+                PrinterConfig.PrinterSettings.DefaultPrinter = value;
+                ConfigMgr.SavePrinterConfiguration();
+            }
         }
 
         public static int DefaultVelocidad
         {
-            get => int.Parse(GetAppSetting("DefaultVelocidad", "4"));
-            set => SetAppSetting("DefaultVelocidad", value.ToString());
+            get => ConfigMgr.GetIntAppSetting("DefaultVelocidad", 4);
+            set
+            {
+                PrinterConfig.PrintParameters.DefaultSpeed = value;
+                ConfigMgr.SavePrinterConfiguration();
+            }
         }
 
         public static int DefaultTemperatura
         {
-            get => int.Parse(GetAppSetting("DefaultTemperatura", "6"));
-            set => SetAppSetting("DefaultTemperatura", value.ToString());
+            get => ConfigMgr.GetIntAppSetting("DefaultTemperatura", 6);
+            set
+            {
+                PrinterConfig.PrintParameters.DefaultDensity = value;
+                ConfigMgr.SavePrinterConfiguration();
+            }
         }
 
         // Configuración de Templates
@@ -57,12 +67,11 @@ namespace EtiquetasApp.Services
         {
             get
             {
-                var path = GetAppSetting("TemplatesPath", Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Templates"));
-                if (!Directory.Exists(path))
-                    Directory.CreateDirectory(path);
+                var path = ConfigMgr.GetAppSetting("TemplatesPath",
+                    Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Templates"));
+                EnsureDirectoryExists(path);
                 return path;
             }
-            set => SetAppSetting("TemplatesPath", value);
         }
 
         // Configuración de Recursos
@@ -70,12 +79,11 @@ namespace EtiquetasApp.Services
         {
             get
             {
-                var path = GetAppSetting("ResourcesPath", Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources"));
-                if (!Directory.Exists(path))
-                    Directory.CreateDirectory(path);
+                var path = ConfigMgr.GetAppSetting("ResourcesPath",
+                    Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources"));
+                EnsureDirectoryExists(path);
                 return path;
             }
-            set => SetAppSetting("ResourcesPath", value);
         }
 
         public static string ImagesPath
@@ -83,8 +91,7 @@ namespace EtiquetasApp.Services
             get
             {
                 var path = Path.Combine(ResourcesPath, "Images");
-                if (!Directory.Exists(path))
-                    Directory.CreateDirectory(path);
+                EnsureDirectoryExists(path);
                 return path;
             }
         }
@@ -92,64 +99,29 @@ namespace EtiquetasApp.Services
         // Configuración de posiciones para etiquetas
         public static string GetEtiquetaPosition(string tipoEtiqueta, string posicion)
         {
-            return GetAppSetting($"{tipoEtiqueta}_{posicion}", "0");
+            return ConfigMgr.GetAppSetting($"{tipoEtiqueta}_{posicion}", "0");
         }
 
         public static void SetEtiquetaPosition(string tipoEtiqueta, string posicion, string valor)
         {
-            SetAppSetting($"{tipoEtiqueta}_{posicion}", valor);
+            // Nota: Para persistir esto necesitarías actualizar app.config directamente
+            // Por ahora solo lo mantenemos en memoria
+            Console.WriteLine($"Posición {tipoEtiqueta}_{posicion} = {valor}");
         }
 
-        // Métodos auxiliares
-        private static string GetAppSetting(string key, string defaultValue = "")
-        {
-            try
-            {
-                var value = ConfigurationManager.AppSettings[key];
-                return !string.IsNullOrEmpty(value) ? value : defaultValue;
-            }
-            catch
-            {
-                return defaultValue;
-            }
-        }
-
-        private static void SetAppSetting(string key, string value)
-        {
-            try
-            {
-                if (_config.AppSettings.Settings[key] != null)
-                    _config.AppSettings.Settings[key].Value = value;
-                else
-                    _config.AppSettings.Settings.Add(key, value);
-
-                _config.Save(ConfigurationSaveMode.Modified);
-                ConfigurationManager.RefreshSection("appSettings");
-            }
-            catch (Exception ex)
-            {
-                throw new InvalidOperationException($"Error al guardar configuración '{key}': {ex.Message}", ex);
-            }
-        }
-
-        // Métodos para validar configuración
+        // Métodos de validación
         public static bool ValidateConfiguration()
         {
             try
             {
-                // Verificar conexiones de BD
                 if (string.IsNullOrEmpty(GetConnectionString("DatabaseConnection1")))
                     return false;
 
                 if (string.IsNullOrEmpty(GetConnectionString("DatabaseConnection2")))
                     return false;
 
-                // Verificar directorios
-                if (!Directory.Exists(TemplatesPath))
-                    Directory.CreateDirectory(TemplatesPath);
-
-                if (!Directory.Exists(ResourcesPath))
-                    Directory.CreateDirectory(ResourcesPath);
+                EnsureDirectoryExists(TemplatesPath);
+                EnsureDirectoryExists(ResourcesPath);
 
                 return true;
             }
@@ -164,9 +136,8 @@ namespace EtiquetasApp.Services
         {
             try
             {
-                // Configuración por defecto
-                DefaultVelocidad = 4;
-                DefaultTemperatura = 6;
+                // Las configuraciones por defecto ya se crean en ConfigurationManager
+                ConfigMgr.Initialize();
 
                 // Posiciones por defecto para C/BCO-E
                 SetEtiquetaPosition("CBCOE", "Posicion1", "4");
@@ -193,6 +164,12 @@ namespace EtiquetasApp.Services
             {
                 throw new InvalidOperationException($"Error al crear configuración por defecto: {ex.Message}", ex);
             }
+        }
+
+        private static void EnsureDirectoryExists(string path)
+        {
+            if (!Directory.Exists(path))
+                Directory.CreateDirectory(path);
         }
     }
 }

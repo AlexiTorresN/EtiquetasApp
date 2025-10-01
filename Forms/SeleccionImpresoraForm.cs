@@ -23,16 +23,6 @@ namespace EtiquetasApp.Forms
         {
             CargarImpresoras();
             ConfigurarEventos();
-            ConfigurarFormulario();
-        }
-
-        private void ConfigurarFormulario()
-        {
-            StartPosition = FormStartPosition.CenterParent;
-            FormBorderStyle = FormBorderStyle.FixedDialog;
-            MaximizeBox = false;
-            MinimizeBox = false;
-            ShowInTaskbar = false;
         }
 
         private void ConfigurarEventos()
@@ -52,28 +42,31 @@ namespace EtiquetasApp.Forms
             {
                 var impresoras = this.impresoras;
 
-                // Filtrar solo Zebra si está marcado
                 if (soloZebraCheckBox.Checked)
                 {
-                    impresoras = PrinterService.GetZebraPrinters();
+                    impresoras = impresoras.Where(p =>
+                        p.ToUpper().Contains("ZEBRA") ||
+                        p.ToUpper().Contains("ZT") ||
+                        p.ToUpper().Contains("ZD")).ToList();
                 }
 
                 impresorasListBox.Items.Clear();
+
+                var defaultPrinter = ConfigurationService.DefaultPrinter;
+
                 foreach (var impresora in impresoras)
                 {
-                    var info = PrinterService.GetPrinterInfo(impresora);
                     var displayText = impresora;
 
-                    if (info != null)
+                    if (!string.IsNullOrEmpty(defaultPrinter) &&
+                        impresora.Equals(defaultPrinter, StringComparison.OrdinalIgnoreCase))
                     {
-                        if (info.IsDefault)
-                            displayText += " (Predeterminada)";
+                        displayText += " (Predeterminada)";
+                    }
 
-                        if (info.SupportsZPL)
-                            displayText += " [ZPL]";
-
-                        if (!info.IsOnline)
-                            displayText += " - Desconectada";
+                    if (impresora.ToUpper().Contains("ZEBRA"))
+                    {
+                        displayText += " [ZPL]";
                     }
 
                     impresorasListBox.Items.Add(displayText);
@@ -90,7 +83,7 @@ namespace EtiquetasApp.Forms
         private void ActualizarEstado()
         {
             var totalImpresoras = impresorasListBox.Items.Count;
-            var zebraCount = PrinterService.GetZebraPrinters().Count;
+            var zebraCount = impresoras.Count(p => p.ToUpper().Contains("ZEBRA"));
 
             statusLabel.Text = $"Total: {totalImpresoras} impresoras | Zebra/ZPL: {zebraCount}";
 
@@ -115,33 +108,36 @@ namespace EtiquetasApp.Forms
             MostrarInfoImpresora();
         }
 
-        private void MostrarInfoImpresora()
+        private async void MostrarInfoImpresora()
         {
             if (impresorasListBox.SelectedIndex >= 0)
             {
                 var nombreImpresora = ObtenerNombreImpresoraSeleccionada();
-                var info = PrinterService.GetPrinterInfo(nombreImpresora);
 
-                if (info != null)
+                try
                 {
-                    var infoText = $"Impresora: {info.Name}\n";
-                    infoText += $"Estado: {info.Status}\n";
-                    infoText += $"Tipo: {(info.SupportsZPL ? "Compatible ZPL" : "Estándar")}\n";
-                    infoText += $"Conexión: {(info.IsOnline ? "Conectada" : "Desconectada")}\n";
+                    var estado = PrinterService.CheckPrinterStatus(nombreImpresora);
+                    var esZebra = nombreImpresora.ToUpper().Contains("ZEBRA");
+                    var esDefault = nombreImpresora.Equals(ConfigurationService.DefaultPrinter,
+                        StringComparison.OrdinalIgnoreCase);
 
-                    if (info.IsDefault)
-                        infoText += "Es la impresora predeterminada del sistema\n";
+                    var infoText = $"Impresora: {nombreImpresora}\n";
+                    infoText += $"Estado: {(estado ? "Conectada" : "Desconectada")}\n";
+                    infoText += $"Tipo: {(esZebra ? "Compatible ZPL" : "Estándar")}\n";
+
+                    if (esDefault)
+                        infoText += "\nImpresora predeterminada del sistema";
 
                     lblInfoImpresora.Text = infoText;
                 }
-                else
+                catch
                 {
-                    lblInfoImpresora.Text = "Información no disponible";
+                    lblInfoImpresora.Text = $"Impresora: {nombreImpresora}\nInformación no disponible";
                 }
             }
             else
             {
-                lblInfoImpresora.Text = "";
+                lblInfoImpresora.Text = "Seleccione una impresora\npara ver información";
             }
         }
 
@@ -150,7 +146,6 @@ namespace EtiquetasApp.Forms
             if (impresorasListBox.SelectedIndex >= 0)
             {
                 var textoCompleto = impresorasListBox.SelectedItem.ToString();
-                // Extraer solo el nombre de la impresora (antes de cualquier texto adicional)
                 var partes = textoCompleto.Split(new[] { " (", " [", " -" }, StringSplitOptions.None);
                 return partes[0];
             }
@@ -171,7 +166,6 @@ namespace EtiquetasApp.Forms
             {
                 ImpresoraSeleccionada = ObtenerNombreImpresoraSeleccionada();
 
-                // Guardar como impresora por defecto si está marcado
                 if (establecerPorDefectoCheckBox.Checked)
                 {
                     try
@@ -203,8 +197,7 @@ namespace EtiquetasApp.Forms
         {
             try
             {
-                // Recargar lista de impresoras del sistema
-                this.impresoras = PrinterService.GetInstalledPrinters();
+                this.impresoras = PrinterService.GetAvailablePrinters();
                 CargarImpresoras();
                 MostrarMensaje("Lista de impresoras actualizada", false);
             }
@@ -226,7 +219,7 @@ namespace EtiquetasApp.Forms
                     btnPrueba.Text = "Enviando...";
                     Application.DoEvents();
 
-                    if (PrinterService.TestPrinter(nombreImpresora))
+                    if (PrinterService.PrintTest(nombreImpresora))
                     {
                         MostrarMensaje("Prueba de impresión enviada correctamente", false);
                     }
@@ -263,12 +256,11 @@ namespace EtiquetasApp.Forms
             MessageBox.Show(mensaje, "Información", MessageBoxButtons.OK, icon);
         }
 
-        // Método estático para uso rápido
         public static string SeleccionarImpresora(IWin32Window owner = null)
         {
             try
             {
-                var impresoras = PrinterService.GetInstalledPrinters();
+                var impresoras = PrinterService.GetAvailablePrinters();
                 using (var form = new SeleccionImpresoraForm(impresoras))
                 {
                     var result = owner != null ? form.ShowDialog(owner) : form.ShowDialog();
@@ -283,7 +275,6 @@ namespace EtiquetasApp.Forms
             }
         }
 
-        // Método para preseleccionar una impresora
         public void PreseleccionarImpresora(string nombreImpresora)
         {
             if (string.IsNullOrEmpty(nombreImpresora)) return;
@@ -299,7 +290,6 @@ namespace EtiquetasApp.Forms
             }
         }
 
-        // Propiedades para configuración externa
         public bool MostrarSoloZebra
         {
             get => soloZebraCheckBox.Checked;

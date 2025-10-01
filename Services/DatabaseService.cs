@@ -132,7 +132,7 @@ namespace EtiquetasApp.Services
                     solicitudes.Add(new SolicitudEtiqueta
                     {
                         IdSolicitud = Convert.ToInt32(row["Id_Solicitud"]),
-                        OrdenFab = row["Orden_Fab"].ToString(),
+                        OrdenFab = Convert.ToInt32(row["Orden_Fab"]),
                         Descripcion = row["Descripcion"].ToString(),
                         CantidadPedida = Convert.ToInt32(row["Cantidad_Pedida"]),
                         CantidadFabricada = row["Cantidad_Fabricada"] != DBNull.Value ? Convert.ToInt32(row["Cantidad_Fabricada"]) : 0,
@@ -140,7 +140,7 @@ namespace EtiquetasApp.Services
                         Observaciones = row["Observaciones"].ToString(),
                         FechaSolicitud = Convert.ToDateTime(row["Fecha_Solicitud"]),
                         FechaRequerida = Convert.ToDateTime(row["Fecha_Requerida"]),
-                        FechaFabricacion = row["Fecha_Fabricacion"] != DBNull.Value ? Convert.ToDateTime(row["Fecha_Fabricacion"]) : DateTime.MinValue
+                        FechaFabricacion = row["Fecha_Fabricacion"] != DBNull.Value ? Convert.ToDateTime(row["Fecha_Fabricacion"]) : (DateTime?)null
                     });
                 }
             }
@@ -157,7 +157,7 @@ namespace EtiquetasApp.Services
             var ordenes = new List<OrdenFabricacion>();
             var sql = @"
                 SELECT DISTINCT 
-                    WO.BASE_ID as OrdenFab,
+                    WO.BASE_ID,
                     WO.PART_QTY as Cantidad,
                     P.DESCRIPTION as Descripcion,
                     P.ID as PartId,
@@ -173,17 +173,17 @@ namespace EtiquetasApp.Services
 
             try
             {
-                var dataTable = ExecuteQuery(sql, "DatabaseConnection2"); // Asumiendo que las órdenes están en la segunda BD
+                var dataTable = ExecuteQuery(sql, "DatabaseConnection2");
                 foreach (DataRow row in dataTable.Rows)
                 {
                     ordenes.Add(new OrdenFabricacion
                     {
-                        OrdenFab = row["OrdenFab"].ToString(),
+                        BaseId = row["BASE_ID"].ToString(),
                         Cantidad = Convert.ToInt32(row["Cantidad"]),
                         Descripcion = row["Descripcion"].ToString(),
                         PartId = row["PartId"].ToString(),
-                        FechaRequerida = Convert.ToDateTime(row["FechaRequerida"]),
-                        FechaInicio = Convert.ToDateTime(row["FechaInicio"])
+                        FechaProgramada = row["FechaRequerida"] != DBNull.Value ? Convert.ToDateTime(row["FechaRequerida"]) : (DateTime?)null,
+                        FechaInicio = row["FechaInicio"] != DBNull.Value ? Convert.ToDateTime(row["FechaInicio"]) : (DateTime?)null
                     });
                 }
             }
@@ -208,7 +208,7 @@ namespace EtiquetasApp.Services
             var parameters = new SqlParameter[]
             {
                 new SqlParameter("@OrdenFab", solicitud.OrdenFab),
-                new SqlParameter("@Descripcion", solicitud.Descripcion),
+                new SqlParameter("@Descripcion", solicitud.Descripcion ?? ""),
                 new SqlParameter("@CantidadPedida", solicitud.CantidadPedida),
                 new SqlParameter("@Color", solicitud.Color ?? ""),
                 new SqlParameter("@Observaciones", solicitud.Observaciones ?? ""),
@@ -342,15 +342,15 @@ namespace EtiquetasApp.Services
                         Descripcion = row["DESCRIPCION"].ToString(),
                         TipoEtiqueta = row["TIPO_CODIGO"].ToString(),
                         ColorEtiqueta = row["COLOR"].ToString(),
-                        Activo = Convert.ToBoolean(row["ACTIVO"] ?? true),
-                        FechaCreacion = Convert.ToDateTime(row["FECHA_CREACION"] ?? DateTime.Now),
+                        Activo = row["ACTIVO"] != DBNull.Value ? Convert.ToBoolean(row["ACTIVO"]) : true,
+                        FechaCreacion = row["FECHA_CREACION"] != DBNull.Value ? Convert.ToDateTime(row["FECHA_CREACION"]) : DateTime.Now,
                         UsuarioCreacion = row["USUARIO_CREACION"].ToString(),
                         FechaModificacion = row["FECHA_MODIFICACION"] as DateTime?,
                         UsuarioModificacion = row["USUARIO_MODIFICACION"].ToString(),
                         Observaciones = row["OBSERVACIONES"].ToString(),
-                        VelocidadImpresion = Convert.ToInt32(row["VELOCIDAD_IMPRESION"] ?? 4),
-                        TemperaturaImpresion = Convert.ToInt32(row["TEMPERATURA_IMPRESION"] ?? 15),
-                        RequiereLogo = Convert.ToBoolean(row["REQUIERE_LOGO"] ?? false),
+                        VelocidadImpresionConfig = row["VELOCIDAD_IMPRESION"] != DBNull.Value ? Convert.ToInt32(row["VELOCIDAD_IMPRESION"]) : 4,
+                        TemperaturaImpresion = row["TEMPERATURA_IMPRESION"] != DBNull.Value ? Convert.ToInt32(row["TEMPERATURA_IMPRESION"]) : 6,
+                        RequiereLogo = row["REQUIERE_LOGO"] != DBNull.Value ? Convert.ToBoolean(row["REQUIERE_LOGO"]) : false,
                         NombreLogo = row["NOMBRE_LOGO"].ToString()
                     };
 
@@ -382,18 +382,18 @@ namespace EtiquetasApp.Services
                 var parameters = new SqlParameter[]
                 {
                     new SqlParameter("@PartId", maestro.PartId),
-                    new SqlParameter("@UPC1", maestro.UPC1),
+                    new SqlParameter("@UPC1", maestro.UPC1 ?? ""),
                     new SqlParameter("@UPC2", maestro.UPC2 ?? ""),
-                    new SqlParameter("@Descripcion", maestro.Descripcion),
+                    new SqlParameter("@Descripcion", maestro.Descripcion ?? ""),
                     new SqlParameter("@Factor", ""),
-                    new SqlParameter("@Color", maestro.ColorEtiqueta),
+                    new SqlParameter("@Color", maestro.ColorEtiqueta ?? ""),
                     new SqlParameter("@User1", ""),
                     new SqlParameter("@SKU", ""),
-                    new SqlParameter("@TipoEtiqueta", maestro.TipoEtiqueta),
+                    new SqlParameter("@TipoEtiqueta", maestro.TipoEtiqueta ?? ""),
                     new SqlParameter("@Activo", maestro.Activo),
                     new SqlParameter("@FechaCreacion", maestro.FechaCreacion),
                     new SqlParameter("@UsuarioCreacion", maestro.UsuarioCreacion ?? ""),
-                    new SqlParameter("@VelocidadImpresion", maestro.VelocidadImpresion),
+                    new SqlParameter("@VelocidadImpresion", maestro.VelocidadImpresionConfig),
                     new SqlParameter("@TemperaturaImpresion", maestro.TemperaturaImpresion),
                     new SqlParameter("@RequiereLogo", maestro.RequiereLogo),
                     new SqlParameter("@NombreLogo", maestro.NombreLogo ?? ""),
@@ -435,15 +435,15 @@ namespace EtiquetasApp.Services
                 var parameters = new SqlParameter[]
                 {
                     new SqlParameter("@PartId", maestro.PartId),
-                    new SqlParameter("@UPC1", maestro.UPC1),
+                    new SqlParameter("@UPC1", maestro.UPC1 ?? ""),
                     new SqlParameter("@UPC2", maestro.UPC2 ?? ""),
-                    new SqlParameter("@Descripcion", maestro.Descripcion),
-                    new SqlParameter("@Color", maestro.ColorEtiqueta),
-                    new SqlParameter("@TipoEtiqueta", maestro.TipoEtiqueta),
+                    new SqlParameter("@Descripcion", maestro.Descripcion ?? ""),
+                    new SqlParameter("@Color", maestro.ColorEtiqueta ?? ""),
+                    new SqlParameter("@TipoEtiqueta", maestro.TipoEtiqueta ?? ""),
                     new SqlParameter("@Activo", maestro.Activo),
                     new SqlParameter("@FechaModificacion", maestro.FechaModificacion ?? DateTime.Now),
                     new SqlParameter("@UsuarioModificacion", maestro.UsuarioModificacion ?? ""),
-                    new SqlParameter("@VelocidadImpresion", maestro.VelocidadImpresion),
+                    new SqlParameter("@VelocidadImpresion", maestro.VelocidadImpresionConfig),
                     new SqlParameter("@TemperaturaImpresion", maestro.TemperaturaImpresion),
                     new SqlParameter("@RequiereLogo", maestro.RequiereLogo),
                     new SqlParameter("@NombreLogo", maestro.NombreLogo ?? ""),
@@ -458,31 +458,6 @@ namespace EtiquetasApp.Services
             catch (Exception ex)
             {
                 throw new Exception($"Error actualizando maestro de código: {ex.Message}", ex);
-            }
-        }
-
-        public static void UpdateSolicitudEtiquetaFabricada(int idSolicitud, int cantidadFabricada)
-        {
-            try
-            {
-                string sql = @"
-                    UPDATE SOLICITUD_ETIQUETAS SET
-                        CANTIDAD_FABRICADA = @CantidadFabricada,
-                        FECHA_FABRICACION = @FechaFabricacion
-                    WHERE ID_ETIQUETA = @IdSolicitud";
-
-                var parameters = new SqlParameter[]
-                {
-                    new SqlParameter("@IdSolicitud", idSolicitud),
-                    new SqlParameter("@CantidadFabricada", cantidadFabricada),
-                    new SqlParameter("@FechaFabricacion", DateTime.Now)
-                };
-
-                ExecuteNonQuery(sql, "DatabaseConnection1", parameters);
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"Error actualizando solicitud fabricada: {ex.Message}", ex);
             }
         }
 
@@ -541,7 +516,7 @@ namespace EtiquetasApp.Services
                     {
                         IdSolicitud = Convert.ToInt32(row["ID_ETIQUETA"]),
                         PartId = row["PART_ID"].ToString(),
-                        OrdenFab = Convert.ToInt32(row["ORDEN_FAB"] ?? 0),
+                        OrdenFab = row["ORDEN_FAB"] != DBNull.Value ? Convert.ToInt32(row["ORDEN_FAB"]) : 0,
                         FechaSolicitud = Convert.ToDateTime(row["FECHA_SOLICITUD"]),
                         FechaRequerida = Convert.ToDateTime(row["FECHA_REQUERIDA"]),
                         CantidadPedida = Convert.ToInt32(row["CANTIDAD_PEDIDA"]),
@@ -549,7 +524,7 @@ namespace EtiquetasApp.Services
                         Observaciones = row["OBS"].ToString(),
                         TipoEtiqueta = row["TIPO_CODIGO"].ToString(),
                         Usuario = row["USUARIO"].ToString(),
-                        CantidadFabricada = Convert.ToInt32(row["CANTIDAD_FABRICADA"] ?? 0),
+                        CantidadFabricada = row["CANTIDAD_FABRICADA"] != DBNull.Value ? Convert.ToInt32(row["CANTIDAD_FABRICADA"]) : 0,
                         FechaFabricacion = row["FECHA_FABRICACION"] as DateTime?,
                         NombreRetira = row["NOMBRE_RETIRA"].ToString(),
                         FechaEntrega = row["FECHA_ENTREGA"] as DateTime?,
@@ -592,7 +567,7 @@ namespace EtiquetasApp.Services
                         BaseId = row["BASE_ID"].ToString(),
                         PartId = row["PART_ID"].ToString(),
                         Descripcion = row["DESCRIPTION"].ToString(),
-                        Cantidad = Convert.ToInt32(row["QUANTITY"] ?? 0),
+                        Cantidad = row["QUANTITY"] != DBNull.Value ? Convert.ToInt32(row["QUANTITY"]) : 0,
                         Estado = row["STATUS"].ToString()
                     };
 

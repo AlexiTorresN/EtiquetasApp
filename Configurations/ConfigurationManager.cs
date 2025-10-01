@@ -1,8 +1,8 @@
 ﻿using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
-using System.Configuration;
 using System.IO;
+using EtiquetasApp.Models;
+using SysConfigManager = System.Configuration.ConfigurationManager;
 
 namespace EtiquetasApp.Configurations
 {
@@ -63,9 +63,6 @@ namespace EtiquetasApp.Configurations
         #endregion
 
         #region Métodos de Inicialización
-        /// <summary>
-        /// Inicializa el gestor de configuración
-        /// </summary>
         public static void Initialize()
         {
             lock (_lockObject)
@@ -196,7 +193,7 @@ namespace EtiquetasApp.Configurations
             try
             {
                 string filePath = Path.Combine(GetConfigPath(), "printer-config.json");
-                string json = JsonConvert.SerializeObject(_printerConfig, Newtonsoft.Json.Formatting.Indented);
+                string json = JsonConvert.SerializeObject(_printerConfig, Formatting.Indented);
                 File.WriteAllText(filePath, json);
                 LogEvent("Configuración de impresoras guardada");
             }
@@ -211,7 +208,7 @@ namespace EtiquetasApp.Configurations
             try
             {
                 string filePath = Path.Combine(GetConfigPath(), "templates-config.json");
-                string json = JsonConvert.SerializeObject(_templatesConfig, Newtonsoft.Json.Formatting.Indented);
+                string json = JsonConvert.SerializeObject(_templatesConfig, Formatting.Indented);
                 File.WriteAllText(filePath, json);
                 LogEvent("Configuración de plantillas guardada");
             }
@@ -226,7 +223,7 @@ namespace EtiquetasApp.Configurations
             try
             {
                 string filePath = Path.Combine(GetConfigPath(), "database-config.json");
-                string json = JsonConvert.SerializeObject(_databaseConfig, Newtonsoft.Json.Formatting.Indented);
+                string json = JsonConvert.SerializeObject(_databaseConfig, Formatting.Indented);
                 File.WriteAllText(filePath, json);
                 LogEvent("Configuración de base de datos guardada");
             }
@@ -241,7 +238,7 @@ namespace EtiquetasApp.Configurations
             try
             {
                 string filePath = Path.Combine(GetConfigPath(), "security-config.json");
-                string json = JsonConvert.SerializeObject(_securityConfig, Newtonsoft.Json.Formatting.Indented);
+                string json = JsonConvert.SerializeObject(_securityConfig, Formatting.Indented);
                 File.WriteAllText(filePath, json);
                 LogEvent("Configuración de seguridad guardada");
             }
@@ -253,14 +250,11 @@ namespace EtiquetasApp.Configurations
         #endregion
 
         #region Métodos Utilitarios App.config
-        /// <summary>
-        /// Obtiene un valor de App.config
-        /// </summary>
         public static string GetAppSetting(string key, string defaultValue = "")
         {
             try
             {
-                return System.Configuration.ConfigurationManager.AppSettings[key] ?? defaultValue;
+                return SysConfigManager.AppSettings[key] ?? defaultValue;
             }
             catch
             {
@@ -268,14 +262,11 @@ namespace EtiquetasApp.Configurations
             }
         }
 
-        /// <summary>
-        /// Obtiene una cadena de conexión
-        /// </summary>
         public static string GetConnectionString(string name)
         {
             try
             {
-                var connectionString = System.Configuration.ConfigurationManager.ConnectionStrings[name];
+                var connectionString = SysConfigManager.ConnectionStrings[name];
                 return connectionString?.ConnectionString ?? string.Empty;
             }
             catch (Exception ex)
@@ -285,18 +276,12 @@ namespace EtiquetasApp.Configurations
             }
         }
 
-        /// <summary>
-        /// Obtiene un valor booleano de App.config
-        /// </summary>
         public static bool GetBoolAppSetting(string key, bool defaultValue = false)
         {
             string value = GetAppSetting(key);
             return bool.TryParse(value, out bool result) ? result : defaultValue;
         }
 
-        /// <summary>
-        /// Obtiene un valor entero de App.config
-        /// </summary>
         public static int GetIntAppSetting(string key, int defaultValue = 0)
         {
             string value = GetAppSetting(key);
@@ -304,7 +289,7 @@ namespace EtiquetasApp.Configurations
         }
         #endregion
 
-        #region Métodos Privados de Configuraciones por Defecto
+        #region Métodos de Configuraciones por Defecto
         private static PrinterConfiguration CreateDefaultPrinterConfiguration()
         {
             return new PrinterConfiguration
@@ -318,7 +303,6 @@ namespace EtiquetasApp.Configurations
                     MaxRetries = 3,
                     RetryDelay = 2000
                 },
-                ZebraPrinters = new List<ZebraPrinter>(),
                 PrintParameters = new PrintParameters
                 {
                     DefaultSpeed = 4,
@@ -341,9 +325,7 @@ namespace EtiquetasApp.Configurations
                     EnableTemplateValidation = true,
                     AutoSaveChanges = true,
                     TemplateEncoding = "UTF-8"
-                },
-                LabelTypes = new List<LabelType>(),
-                Variables = new Variables()
+                }
             };
         }
 
@@ -387,21 +369,18 @@ namespace EtiquetasApp.Configurations
         #region Métodos de Validación
         private static void ValidateConfigurations()
         {
-            // Validar configuración de base de datos
-            if (string.IsNullOrEmpty(GetConnectionString("EtiquetasDB")))
+            if (string.IsNullOrEmpty(GetConnectionString("DatabaseConnection1")))
             {
-                throw new ConfigurationErrorsException("Cadena de conexión 'EtiquetasDB' no configurada");
+                LogError("Advertencia: Cadena de conexión 'DatabaseConnection1' no configurada");
             }
 
-            // Validar directorio de plantillas
-            string templatesPath = GetAppSetting("ZPLTemplatesPath", @"Templates\ZPL\");
+            string templatesPath = GetAppSetting("TemplatesPath", @"Templates\");
             if (!Directory.Exists(templatesPath))
             {
                 Directory.CreateDirectory(templatesPath);
                 LogEvent($"Directorio de plantillas creado: {templatesPath}");
             }
 
-            // Validar directorio de logs
             string logsPath = GetAppSetting("LogPath", @"Logs\");
             if (!Directory.Exists(logsPath))
             {
@@ -430,12 +409,8 @@ namespace EtiquetasApp.Configurations
             try
             {
                 Console.WriteLine($"[INFO] {DateTime.Now:yyyy-MM-dd HH:mm:ss} - {message}");
-                // Aquí puedes agregar logging a archivo si es necesario
             }
-            catch
-            {
-                // Evitar errores de logging para evitar bucles infinitos
-            }
+            catch { }
         }
 
         private static void LogError(string message)
@@ -443,136 +418,9 @@ namespace EtiquetasApp.Configurations
             try
             {
                 Console.WriteLine($"[ERROR] {DateTime.Now:yyyy-MM-dd HH:mm:ss} - {message}");
-                // Aquí puedes agregar logging a archivo si es necesario
             }
-            catch
-            {
-                // Evitar errores de logging para evitar bucles infinitos
-            }
+            catch { }
         }
         #endregion
     }
-
-    #region Clases de Configuración
-    public class PrinterConfiguration
-    {
-        public PrinterSettings PrinterSettings { get; set; }
-        public List<ZebraPrinter> ZebraPrinters { get; set; }
-        public PrintParameters PrintParameters { get; set; }
-    }
-
-    public class PrinterSettings
-    {
-        public string DefaultPrinter { get; set; }
-        public bool AutoDetectPrinters { get; set; }
-        public int ConnectionTimeout { get; set; }
-        public int PrintTimeout { get; set; }
-        public int MaxRetries { get; set; }
-        public int RetryDelay { get; set; }
-    }
-
-    public class ZebraPrinter
-    {
-        public string Name { get; set; }
-        public string DisplayName { get; set; }
-        public string IPAddress { get; set; }
-        public int Port { get; set; }
-        public string Model { get; set; }
-        public int Resolution { get; set; }
-        public int MaxWidth { get; set; }
-        public int MaxHeight { get; set; }
-        public bool IsNetworkPrinter { get; set; }
-        public bool IsEnabled { get; set; }
-        public string Description { get; set; }
-    }
-
-    public class PrintParameters
-    {
-        public int DefaultSpeed { get; set; }
-        public int DefaultDensity { get; set; }
-        public int DefaultTearOff { get; set; }
-        public int[] SpeedOptions { get; set; }
-        public int[] DensityOptions { get; set; }
-    }
-
-    public class TemplatesConfiguration
-    {
-        public TemplateSettings TemplateSettings { get; set; }
-        public List<LabelType> LabelTypes { get; set; }
-        public Variables Variables { get; set; }
-    }
-
-    public class TemplateSettings
-    {
-        public string DefaultTemplatesPath { get; set; }
-        public string BackupTemplatesPath { get; set; }
-        public bool EnableTemplateValidation { get; set; }
-        public bool AutoSaveChanges { get; set; }
-        public string TemplateEncoding { get; set; }
-    }
-
-    public class LabelType
-    {
-        public string TipoCodigo { get; set; }
-        public string Descripcion { get; set; }
-        public string TemplateFile { get; set; }
-        public int Width { get; set; }
-        public int Height { get; set; }
-        public bool IsActive { get; set; }
-        public string[] RequiredFields { get; set; }
-        public string[] OptionalFields { get; set; }
-    }
-
-    public class Variables
-    {
-        public List<Variable> GlobalVariables { get; set; }
-        public List<Variable> CommonVariables { get; set; }
-    }
-
-    public class Variable
-    {
-        public string Name { get; set; }
-        public string Type { get; set; }
-        public string Format { get; set; }
-        public string Description { get; set; }
-        public int MaxLength { get; set; }
-        public bool Required { get; set; }
-    }
-
-    public class DatabaseConfiguration
-    {
-        public DatabaseSettings DatabaseSettings { get; set; }
-    }
-
-    public class DatabaseSettings
-    {
-        public string Provider { get; set; }
-        public int ConnectionTimeout { get; set; }
-        public int CommandTimeout { get; set; }
-        public bool EnableConnectionPooling { get; set; }
-        public int MaxPoolSize { get; set; }
-        public int MinPoolSize { get; set; }
-    }
-
-    public class SecurityConfiguration
-    {
-        public SecuritySettings SecuritySettings { get; set; }
-        public ApplicationSecurity ApplicationSecurity { get; set; }
-    }
-
-    public class SecuritySettings
-    {
-        public string AuthenticationMode { get; set; }
-        public bool EnableAuditLog { get; set; }
-        public int SessionTimeoutMinutes { get; set; }
-        public int MaxConcurrentSessions { get; set; }
-    }
-
-    public class ApplicationSecurity
-    {
-        public string ApplicationName { get; set; }
-        public bool EnableComputerValidation { get; set; }
-        public string DefaultPermissionLevel { get; set; }
-    }
-    #endregion
 }

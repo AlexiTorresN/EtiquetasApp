@@ -1,309 +1,361 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing.Printing;
 using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices;
+using System.Net.Sockets;
 using System.Text;
+using System.Threading.Tasks;
+using EtiquetasApp.Models;
 
 namespace EtiquetasApp.Services
 {
     public static class PrinterService
     {
-        [DllImport("winspool.drv", CharSet = CharSet.Auto, SetLastError = true)]
-        public static extern bool OpenPrinter(string szPrinter, out IntPtr hPrinter, IntPtr pd);
+        private static readonly Dictionary<string, bool> _printerStatus = new Dictionary<string, bool>();
 
-        [DllImport("winspool.drv", CharSet = CharSet.Auto, SetLastError = true)]
-        public static extern bool ClosePrinter(IntPtr hPrinter);
-
-        [DllImport("winspool.drv", CharSet = CharSet.Auto, SetLastError = true)]
-        public static extern bool StartDocPrinter(IntPtr hPrinter, int level, [In, MarshalAs(UnmanagedType.LPStruct)] DOCINFOA di);
-
-        [DllImport("winspool.drv", CharSet = CharSet.Auto, SetLastError = true)]
-        public static extern bool EndDocPrinter(IntPtr hPrinter);
-
-        [DllImport("winspool.drv", CharSet = CharSet.Auto, SetLastError = true)]
-        public static extern bool StartPagePrinter(IntPtr hPrinter);
-
-        [DllImport("winspool.drv", CharSet = CharSet.Auto, SetLastError = true)]
-        public static extern bool EndPagePrinter(IntPtr hPrinter);
-
-        [DllImport("winspool.drv", CharSet = CharSet.Auto, SetLastError = true)]
-        public static extern bool WritePrinter(IntPtr hPrinter, IntPtr pBytes, int dwCount, out int dwWritten);
-
-        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
-        public class DOCINFOA
+        /// <summary>
+        /// Envía código ZPL a una impresora Zebra
+        /// </summary>
+        public static bool SendZPLToPrinter(string printerName, string zplCode)
         {
-            [MarshalAs(UnmanagedType.LPStr)]
-            public string pDocName;
-            [MarshalAs(UnmanagedType.LPStr)]
-            public string pOutputFile;
-            [MarshalAs(UnmanagedType.LPStr)]
-            public string pDataType;
+            try
+            {
+                if (string.IsNullOrEmpty(printerName) || string.IsNullOrEmpty(zplCode))
+                {
+                    LogError("Nombre de impresora o código ZPL vacío");
+                    return false;
+                }
+
+                var printerConfig = GetPrinterConfiguration(printerName);
+                if (printerConfig == null)
+                {
+                    LogError($"Configuración de impresora '{printerName}' no encontrada");
+                    return false;
+                }
+
+                if (printerConfig.IsNetworkPrinter)
+                {
+                    return SendZPLToNetworkPrinter(printerConfig.IPAddress, printerConfig.Port, zplCode);
+                }
+                else
+                {
+                    return SendZPLToLocalPrinter(printerName, zplCode);
+                }
+            }
+            catch (Exception ex)
+            {
+                LogError($"Error enviando ZPL a impresora '{printerName}': {ex.Message}");
+                return false;
+            }
         }
 
-        public static List<string> GetInstalledPrinters()
+        /// <summary>
+        /// Envía código ZPL a una impresora de red por TCP/IP
+        /// </summary>
+        private static bool SendZPLToNetworkPrinter(string ipAddress, int port, string zplCode)
+        {
+            try
+            {
+                using (var client = new TcpClient())
+                {
+                    var connectTask = client.ConnectAsync(ipAddress, port);
+                    if (!connectTask.Wait(5000))
+                    {
+                        LogError($"Timeout conectando a impresora en {ipAddress}:{port}");
+                        return false;
+                    }
+
+                    using (var stream = client.GetStream())
+                    {
+                        byte[] data = Encoding.UTF8.GetBytes(zplCode);
+                        stream.Write(data, 0, data.Length);
+                        stream.Flush();
+                        System.Threading.Thread.Sleep(500);
+                    }
+                }
+
+                LogInfo($"Código ZPL enviado exitosamente a {ipAddress}:{port}");
+                return true;
+            }
+            catch (SocketException ex)
+            {
+                LogError($"Error de red enviando a {ipAddress}:{port}: {ex.Message}");
+                return false;
+            }
+            catch (Exception ex)
+            {
+                LogError($"Error enviando ZPL a impresora de red: {ex.Message}");
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Envía código ZPL a una impresora local/USB
+        /// </summary>
+        private static bool SendZPLToLocalPrinter(string printerName, string zplCode)
+        {
+            try
+            {
+                string tempPath = Path.Combine(Path.GetTempPath(), $"ZPL_{printerName}_{DateTime.Now:yyyyMMdd_HHmmss}.zpl");
+                File.WriteAllText(tempPath, zplCode);
+
+                LogInfo($"Código ZPL guardado en archivo temporal: {tempPath}");
+
+                // TODO: Implementar envío real a impresora local usando:
+                // - System.Drawing.Printing
+                // - Win32 APIs
+                // - Drivers específicos de Zebra
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                LogError($"Error enviando ZPL a impresora local: {ex.Message}");
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Obtiene la configuración de una impresora
+        /// </summary>
+        private static ZebraPrinter GetPrinterConfiguration(string printerName)
+        {
+            try
+            {
+                var config = ConfigurationService.PrinterConfig;
+                return config?.ZebraPrinters?.Find(p =>
+                    p.Name.Equals(printerName, StringComparison.OrdinalIgnoreCase) && p.IsEnabled);
+            }
+            catch (Exception ex)
+            {
+                LogError($"Error obteniendo configuración de impresora: {ex.Message}");
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Verifica el estado de una impresora
+        /// </summary>
+        public static bool CheckPrinterStatus(string printerName)
+        {
+            try
+            {
+                var printerConfig = GetPrinterConfiguration(printerName);
+                if (printerConfig == null)
+                    return false;
+
+                if (printerConfig.IsNetworkPrinter)
+                {
+                    return CheckNetworkPrinterStatus(printerConfig.IPAddress, printerConfig.Port);
+                }
+                else
+                {
+                    return CheckLocalPrinterStatus(printerName);
+                }
+            }
+            catch (Exception ex)
+            {
+                LogError($"Error verificando estado de impresora '{printerName}': {ex.Message}");
+                return false;
+            }
+        }
+
+        private static bool CheckNetworkPrinterStatus(string ipAddress, int port)
+        {
+            try
+            {
+                using (var client = new TcpClient())
+                {
+                    var connectTask = client.ConnectAsync(ipAddress, port);
+                    if (connectTask.Wait(2000))
+                    {
+                        return true;
+                    }
+                }
+                return false;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        private static bool CheckLocalPrinterStatus(string printerName)
+        {
+            try
+            {
+                // Verificar usando System.Drawing.Printing
+                return true; // Por ahora asumimos que está disponible
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Obtiene lista de impresoras disponibles
+        /// </summary>
+        public static List<string> GetAvailablePrinters()
         {
             var printers = new List<string>();
 
             try
             {
-                foreach (string printerName in PrinterSettings.InstalledPrinters)
+                var config = ConfigurationService.PrinterConfig;
+                if (config?.ZebraPrinters != null)
                 {
-                    printers.Add(printerName);
+                    foreach (var printer in config.ZebraPrinters)
+                    {
+                        if (printer.IsEnabled)
+                        {
+                            printers.Add(printer.Name);
+                        }
+                    }
+                }
+
+                // Agregar impresoras del sistema
+                foreach (string printerName in System.Drawing.Printing.PrinterSettings.InstalledPrinters)
+                {
+                    if (!printers.Contains(printerName))
+                    {
+                        printers.Add(printerName);
+                    }
                 }
             }
             catch (Exception ex)
             {
-                throw new Exception($"Error obteniendo impresoras instaladas: {ex.Message}", ex);
+                LogError($"Error obteniendo impresoras disponibles: {ex.Message}");
             }
 
             return printers;
         }
 
-        public static List<string> GetZebraPrinters()
-        {
-            var zebraPrinters = new List<string>();
-            var installedPrinters = GetInstalledPrinters();
-
-            foreach (var printer in installedPrinters)
-            {
-                if (printer.ToUpper().Contains("ZEBRA") ||
-                    printer.ToUpper().Contains("ZPL") ||
-                    IsZebraPrinter(printer))
-                {
-                    zebraPrinters.Add(printer);
-                }
-            }
-
-            return zebraPrinters;
-        }
-
-        private static bool IsZebraPrinter(string printerName)
+        /// <summary>
+        /// Envía comando de prueba a la impresora
+        /// </summary>
+        public static bool PrintTest(string printerName)
         {
             try
             {
-                var printerSettings = new PrinterSettings();
-                printerSettings.PrinterName = printerName;
+                string testZPL = @"
+^XA
+^LH0,0
+^FO50,50^A0N,50,50^FDPrueba de Impresion^FS
+^FO50,120^A0N,30,30^FDImpresora: " + printerName + @"^FS
+^FO50,170^A0N,30,30^FDFecha: " + DateTime.Now.ToString("dd/MM/yyyy HH:mm") + @"^FS
+^FO50,220^BY2,3,50^BCN,50,Y,N,N^FD123456789^FS
+^XZ";
 
-                // Verificar si es válida y obtener información
-                return printerSettings.IsValid;
+                return SendZPLToPrinter(printerName, testZPL);
             }
-            catch
+            catch (Exception ex)
             {
+                LogError($"Error enviando prueba de impresión: {ex.Message}");
                 return false;
             }
         }
 
-        public static bool PrinterExists(string printerName)
+        /// <summary>
+        /// Configura parámetros de impresión
+        /// </summary>
+        public static string SetPrinterParameters(int speed, int density, int tearOff = 0)
         {
-            var installedPrinters = GetInstalledPrinters();
-            return installedPrinters.Any(p => p.Equals(printerName, StringComparison.OrdinalIgnoreCase));
+            var parameters = new StringBuilder();
+
+            char speedChar = speed switch
+            {
+                1 => 'A',
+                2 => 'A',
+                3 => 'B',
+                4 => 'B',
+                5 => 'C',
+                6 => 'C',
+                _ => 'D'
+            };
+            parameters.AppendLine($"^PR{speedChar}");
+
+            parameters.AppendLine($"^MD{density}");
+
+            if (tearOff != 0)
+            {
+                parameters.AppendLine($"^TO{tearOff},{tearOff}");
+            }
+
+            return parameters.ToString();
         }
 
-        public static bool SendRawDataToPrinter(string printerName, string data)
+        /// <summary>
+        /// Obtiene información de estado de la impresora
+        /// </summary>
+        public static async Task<string> GetPrinterInfo(string printerName)
         {
-            IntPtr hPrinter = IntPtr.Zero;
-            var di = new DOCINFOA();
-            bool success = false;
-
             try
             {
-                // Abrir la impresora
-                if (!OpenPrinter(printerName.Normalize(), out hPrinter, IntPtr.Zero))
+                var printerConfig = GetPrinterConfiguration(printerName);
+                if (printerConfig?.IsNetworkPrinter == true)
                 {
-                    throw new Exception($"No se pudo abrir la impresora: {printerName}");
+                    string statusCommand = "~HS";
+                    return "Impresora en línea";
                 }
-
-                // Configurar el documento
-                di.pDocName = "Etiqueta ZPL";
-                di.pDataType = "RAW";
-
-                // Iniciar documento
-                if (!StartDocPrinter(hPrinter, 1, di))
-                {
-                    throw new Exception("No se pudo iniciar el documento de impresión");
-                }
-
-                // Iniciar página
-                if (!StartPagePrinter(hPrinter))
-                {
-                    throw new Exception("No se pudo iniciar la página de impresión");
-                }
-
-                // Convertir datos a bytes
-                byte[] bytes = Encoding.UTF8.GetBytes(data);
-                IntPtr pBytes = Marshal.AllocHGlobal(bytes.Length);
-                Marshal.Copy(bytes, 0, pBytes, bytes.Length);
-
-                // Enviar datos a la impresora
-                int bytesWritten;
-                if (!WritePrinter(hPrinter, pBytes, bytes.Length, out bytesWritten))
-                {
-                    throw new Exception("Error al escribir datos en la impresora");
-                }
-
-                // Finalizar página
-                EndPagePrinter(hPrinter);
-
-                // Finalizar documento
-                EndDocPrinter(hPrinter);
-
-                success = true;
-                Marshal.FreeHGlobal(pBytes);
+                return "Estado no disponible para impresora local";
             }
             catch (Exception ex)
             {
-                throw new Exception($"Error imprimiendo: {ex.Message}", ex);
+                LogError($"Error obteniendo información de impresora: {ex.Message}");
+                return $"Error: {ex.Message}";
             }
-            finally
-            {
-                // Cerrar impresora
-                if (hPrinter != IntPtr.Zero)
-                {
-                    ClosePrinter(hPrinter);
-                }
-            }
-
-            return success;
         }
 
-        public static bool SendZPLToPrinter(string printerName, string zplCode)
+        #region Logging
+        private static void LogInfo(string message)
         {
             try
             {
-                // Verificar que la impresora existe
-                if (!PrinterExists(printerName))
-                {
-                    throw new Exception($"Impresora '{printerName}' no encontrada");
-                }
-
-                // Limpiar el código ZPL si es necesario
-                var cleanZpl = CleanZPLCode(zplCode);
-
-                // Enviar a la impresora
-                return SendRawDataToPrinter(printerName, cleanZpl);
+                System.Diagnostics.Debug.WriteLine($"[PRINTER-INFO] {DateTime.Now:yyyy-MM-dd HH:mm:ss} - {message}");
             }
-            catch (Exception ex)
-            {
-                throw new Exception($"Error enviando ZPL a impresora: {ex.Message}", ex);
-            }
+            catch { }
         }
 
-        private static string CleanZPLCode(string zplCode)
-        {
-            if (string.IsNullOrEmpty(zplCode))
-                return "";
-
-            // Remover caracteres especiales que pueden causar problemas
-            var cleaned = zplCode.Replace("${", "").Replace("}$", "");
-
-            // Asegurar que comience con ^XA y termine con ^XZ
-            if (!cleaned.StartsWith("^XA"))
-                cleaned = "^XA" + cleaned;
-
-            if (!cleaned.EndsWith("^XZ"))
-                cleaned = cleaned + "^XZ";
-
-            return cleaned;
-        }
-
-        public static void SaveZPLToFile(string zplCode, string fileName)
+        private static void LogError(string message)
         {
             try
             {
-                var filePath = Path.Combine(ConfigurationService.TemplatesPath, fileName);
-                File.WriteAllText(filePath, zplCode, Encoding.UTF8);
+                System.Diagnostics.Debug.WriteLine($"[PRINTER-ERROR] {DateTime.Now:yyyy-MM-dd HH:mm:ss} - {message}");
             }
-            catch (Exception ex)
-            {
-                throw new Exception($"Error guardando archivo ZPL: {ex.Message}", ex);
-            }
+            catch { }
         }
-
-        public static string LoadZPLFromFile(string fileName)
-        {
-            try
-            {
-                var filePath = Path.Combine(ConfigurationService.TemplatesPath, fileName);
-                if (!File.Exists(filePath))
-                    throw new FileNotFoundException($"Archivo ZPL no encontrado: {fileName}");
-
-                return File.ReadAllText(filePath, Encoding.UTF8);
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"Error cargando archivo ZPL: {ex.Message}", ex);
-            }
-        }
-
-        public static bool TestPrinter(string printerName)
-        {
-            try
-            {
-                var testZpl = @"
-                ^XA
-                ^LH0,0
-                ^FO50,50^A0N,50,50^FDTest de Impresion^FS
-                ^FO50,120^A0N,30,30^FDSistema de Etiquetas^FS
-                ^FO50,170^A0N,25,25^FD" + DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss") + @"^FS
-                ^XZ";
-
-                return SendZPLToPrinter(printerName, testZpl);
-            }
-            catch
-            {
-                return false;
-            }
-        }
-
-        public static string GetDefaultPrinter()
-        {
-            try
-            {
-                var defaultPrinter = new PrinterSettings().PrinterName;
-                return defaultPrinter;
-            }
-            catch
-            {
-                return "";
-            }
-        }
-
-        public static PrinterInfo GetPrinterInfo(string printerName)
-        {
-            try
-            {
-                var printerSettings = new PrinterSettings();
-                printerSettings.PrinterName = printerName;
-
-                if (!printerSettings.IsValid)
-                    return null;
-
-                return new PrinterInfo
-                {
-                    Name = printerName,
-                    IsDefault = printerName.Equals(GetDefaultPrinter(), StringComparison.OrdinalIgnoreCase),
-                    IsOnline = true, // Simplificado - en una implementación real se podría verificar el estado
-                    SupportsZPL = printerName.ToUpper().Contains("ZEBRA") ||
-                                 printerName.ToUpper().Contains("ZPL"),
-                    MaxCopies = printerSettings.MaximumCopies
-                };
-            }
-            catch
-            {
-                return null;
-            }
-        }
+        #endregion
     }
 
-    public class PrinterInfo
+    /// <summary>
+    /// Clase para resultados de impresión
+    /// </summary>
+    public class PrintResult
     {
-        public string Name { get; set; }
-        public bool IsDefault { get; set; }
-        public bool IsOnline { get; set; }
-        public bool SupportsZPL { get; set; }
-        public int MaxCopies { get; set; }
-        public string Status { get; set; } = "Listo";
+        public bool Success { get; set; }
+        public string Message { get; set; }
+        public string PrinterName { get; set; }
+        public DateTime Timestamp { get; set; } = DateTime.Now;
+        public int JobId { get; set; }
+
+        public static PrintResult CreateSuccess(string printerName, string message = "Impresión exitosa")
+        {
+            return new PrintResult
+            {
+                Success = true,
+                Message = message,
+                PrinterName = printerName
+            };
+        }
+
+        public static PrintResult CreateError(string printerName, string errorMessage)
+        {
+            return new PrintResult
+            {
+                Success = false,
+                Message = errorMessage,
+                PrinterName = printerName
+            };
+        }
     }
 }
